@@ -75,13 +75,16 @@ class Slatec(Package):
 
     def default_flag_handler(self, env, flag_val):
         flags = flag_val[1]
-        if '%intel' in spec:
+        if '%intel' in self.spec:
             flags.append('-limf')
             flags.append('-lifcore')
+        elif '%clang' in self.spec:
+            flags.append('-fPIC')
+
         return flags
 
     def install(self, spec, prefix):
         with working_dir(self.stage.path):
             make('all')
             install('libslatec.so', prefix)
-            install('libslatec.a', prefix)
+            install('libstatic_slatec.a', prefix)

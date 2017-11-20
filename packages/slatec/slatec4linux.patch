@@ -1,2239 +1,2231 @@
-diff -crNb clean/d1mach.f with_make/d1mach.f
-*** clean/d1mach.f	1970-01-01 09:00:00.000000000 +0900
---- with_make/d1mach.f	1999-10-07 06:13:26.000000000 +0900
-***************
-*** 0 ****
---- 1,505 ----
-+ *DECK D1MACH
-+       DOUBLE PRECISION FUNCTION D1MACH (I)
-+ C***BEGIN PROLOGUE  D1MACH
-+ C***PURPOSE  Return floating point machine dependent constants.
-+ C***LIBRARY   SLATEC
-+ C***CATEGORY  R1
-+ C***TYPE      DOUBLE PRECISION (R1MACH-S, D1MACH-D)
-+ C***KEYWORDS  MACHINE CONSTANTS
-+ C***AUTHOR  Fox, P. A., (Bell Labs)
-+ C           Hall, A. D., (Bell Labs)
-+ C           Schryer, N. L., (Bell Labs)
-+ C***DESCRIPTION
-+ C
-+ C   D1MACH can be used to obtain machine-dependent parameters for the
-+ C   local machine environment.  It is a function subprogram with one
-+ C   (input) argument, and can be referenced as follows:
-+ C
-+ C        D = D1MACH(I)
-+ C
-+ C   where I=1,...,5.  The (output) value of D above is determined by
-+ C   the (input) value of I.  The results for various values of I are
-+ C   discussed below.
-+ C
-+ C   D1MACH( 1) = B**(EMIN-1), the smallest positive magnitude.
-+ C   D1MACH( 2) = B**EMAX*(1 - B**(-T)), the largest magnitude.
-+ C   D1MACH( 3) = B**(-T), the smallest relative spacing.
-+ C   D1MACH( 4) = B**(1-T), the largest relative spacing.
-+ C   D1MACH( 5) = LOG10(B)
-+ C
-+ C   Assume double precision numbers are represented in the T-digit,
-+ C   base-B form
-+ C
-+ C              sign (B**E)*( (X(1)/B) + ... + (X(T)/B**T) )
-+ C
-+ C   where 0 .LE. X(I) .LT. B for I=1,...,T, 0 .LT. X(1), and
-+ C   EMIN .LE. E .LE. EMAX.
-+ C
-+ C   The values of B, T, EMIN and EMAX are provided in I1MACH as
-+ C   follows:
-+ C   I1MACH(10) = B, the base.
-+ C   I1MACH(14) = T, the number of base-B digits.
-+ C   I1MACH(15) = EMIN, the smallest exponent E.
-+ C   I1MACH(16) = EMAX, the largest exponent E.
-+ C
-+ C   To alter this function for a particular environment, the desired
-+ C   set of DATA statements should be activated by removing the C from
-+ C   column 1.  Also, the values of D1MACH(1) - D1MACH(4) should be
-+ C   checked for consistency with the local operating system.
-+ C
-+ C***REFERENCES  P. A. Fox, A. D. Hall and N. L. Schryer, Framework for
-+ C                 a portable library, ACM Transactions on Mathematical
-+ C                 Software 4, 2 (June 1978), pp. 177-188.
-+ C***ROUTINES CALLED  XERMSG
-+ C***REVISION HISTORY  (YYMMDD)
-+ C   750101  DATE WRITTEN
-+ C   890213  REVISION DATE from Version 3.2
-+ C   891214  Prologue converted to Version 4.0 format.  (BAB)
-+ C   900315  CALLs to XERROR changed to CALLs to XERMSG.  (THJ)
-+ C   900618  Added DEC RISC constants.  (WRB)
-+ C   900723  Added IBM RS 6000 constants.  (WRB)
-+ C   900911  Added SUN 386i constants.  (WRB)
-+ C   910710  Added HP 730 constants.  (SMR)
-+ C   911114  Added Convex IEEE constants.  (WRB)
-+ C   920121  Added SUN -r8 compiler option constants.  (WRB)
-+ C   920229  Added Touchstone Delta i860 constants.  (WRB)
-+ C   920501  Reformatted the REFERENCES section.  (WRB)
-+ C   920625  Added CONVEX -p8 and -pd8 compiler option constants.
-+ C           (BKS, WRB)
-+ C   930201  Added DEC Alpha and SGI constants.  (RWC and WRB)
-+ C***END PROLOGUE  D1MACH
-+ C
-+ C
-+ 	external dlamch
-+       DOUBLE PRECISION DMACH(5),dlamch
-+ 	integer iflag
-+ 
-+       SAVE DMACH,iflag
-+ 	data iflag/0/
-+ C
-+ C
-+ C     MACHINE CONSTANTS FOR THE AMIGA
-+ C     ABSOFT FORTRAN COMPILER USING THE 68020/68881 COMPILER OPTION
-+ C
-+ C     DATA SMALL(1), SMALL(2) / Z'00100000', Z'00000000' /
-+ C     DATA LARGE(1), LARGE(2) / Z'7FEFFFFF', Z'FFFFFFFF' /
-+ C     DATA RIGHT(1), RIGHT(2) / Z'3CA00000', Z'00000000' /
-+ C     DATA DIVER(1), DIVER(2) / Z'3CB00000', Z'00000000' /
-+ C     DATA LOG10(1), LOG10(2) / Z'3FD34413', Z'509F79FF' /
-+ C
-+ C     MACHINE CONSTANTS FOR THE AMIGA
-+ C     ABSOFT FORTRAN COMPILER USING SOFTWARE FLOATING POINT
-+ C
-+ C     DATA SMALL(1), SMALL(2) / Z'00100000', Z'00000000' /
-+ C     DATA LARGE(1), LARGE(2) / Z'7FDFFFFF', Z'FFFFFFFF' /
-+ C     DATA RIGHT(1), RIGHT(2) / Z'3CA00000', Z'00000000' /
-+ C     DATA DIVER(1), DIVER(2) / Z'3CB00000', Z'00000000' /
-+ C     DATA LOG10(1), LOG10(2) / Z'3FD34413', Z'509F79FF' /
-+ C
-+ C     MACHINE CONSTANTS FOR THE APOLLO
-+ C
-+ C     DATA SMALL(1), SMALL(2) / 16#00100000, 16#00000000 /
-+ C     DATA LARGE(1), LARGE(2) / 16#7FFFFFFF, 16#FFFFFFFF /
-+ C     DATA RIGHT(1), RIGHT(2) / 16#3CA00000, 16#00000000 /
-+ C     DATA DIVER(1), DIVER(2) / 16#3CB00000, 16#00000000 /
-+ C     DATA LOG10(1), LOG10(2) / 16#3FD34413, 16#509F79FF /
-+ C
-+ C     MACHINE CONSTANTS FOR THE BURROUGHS 1700 SYSTEM
-+ C
-+ C     DATA SMALL(1) / ZC00800000 /
-+ C     DATA SMALL(2) / Z000000000 /
-+ C     DATA LARGE(1) / ZDFFFFFFFF /
-+ C     DATA LARGE(2) / ZFFFFFFFFF /
-+ C     DATA RIGHT(1) / ZCC5800000 /
-+ C     DATA RIGHT(2) / Z000000000 /
-+ C     DATA DIVER(1) / ZCC6800000 /
-+ C     DATA DIVER(2) / Z000000000 /
-+ C     DATA LOG10(1) / ZD00E730E7 /
-+ C     DATA LOG10(2) / ZC77800DC0 /
-+ C
-+ C     MACHINE CONSTANTS FOR THE BURROUGHS 5700 SYSTEM
-+ C
-+ C     DATA SMALL(1) / O1771000000000000 /
-+ C     DATA SMALL(2) / O0000000000000000 /
-+ C     DATA LARGE(1) / O0777777777777777 /
-+ C     DATA LARGE(2) / O0007777777777777 /
-+ C     DATA RIGHT(1) / O1461000000000000 /
-+ C     DATA RIGHT(2) / O0000000000000000 /
-+ C     DATA DIVER(1) / O1451000000000000 /
-+ C     DATA DIVER(2) / O0000000000000000 /
-+ C     DATA LOG10(1) / O1157163034761674 /
-+ C     DATA LOG10(2) / O0006677466732724 /
-+ C
-+ C     MACHINE CONSTANTS FOR THE BURROUGHS 6700/7700 SYSTEMS
-+ C
-+ C     DATA SMALL(1) / O1771000000000000 /
-+ C     DATA SMALL(2) / O7770000000000000 /
-+ C     DATA LARGE(1) / O0777777777777777 /
-+ C     DATA LARGE(2) / O7777777777777777 /
-+ C     DATA RIGHT(1) / O1461000000000000 /
-+ C     DATA RIGHT(2) / O0000000000000000 /
-+ C     DATA DIVER(1) / O1451000000000000 /
-+ C     DATA DIVER(2) / O0000000000000000 /
-+ C     DATA LOG10(1) / O1157163034761674 /
-+ C     DATA LOG10(2) / O0006677466732724 /
-+ C
-+ C     MACHINE CONSTANTS FOR THE CDC 170/180 SERIES USING NOS/VE
-+ C
-+ C     DATA SMALL(1) / Z"3001800000000000" /
-+ C     DATA SMALL(2) / Z"3001000000000000" /
-+ C     DATA LARGE(1) / Z"4FFEFFFFFFFFFFFE" /
-+ C     DATA LARGE(2) / Z"4FFE000000000000" /
-+ C     DATA RIGHT(1) / Z"3FD2800000000000" /
-+ C     DATA RIGHT(2) / Z"3FD2000000000000" /
-+ C     DATA DIVER(1) / Z"3FD3800000000000" /
-+ C     DATA DIVER(2) / Z"3FD3000000000000" /
-+ C     DATA LOG10(1) / Z"3FFF9A209A84FBCF" /
-+ C     DATA LOG10(2) / Z"3FFFF7988F8959AC" /
-+ C
-+ C     MACHINE CONSTANTS FOR THE CDC 6000/7000 SERIES
-+ C
-+ C     DATA SMALL(1) / 00564000000000000000B /
-+ C     DATA SMALL(2) / 00000000000000000000B /
-+ C     DATA LARGE(1) / 37757777777777777777B /
-+ C     DATA LARGE(2) / 37157777777777777777B /
-+ C     DATA RIGHT(1) / 15624000000000000000B /
-+ C     DATA RIGHT(2) / 00000000000000000000B /
-+ C     DATA DIVER(1) / 15634000000000000000B /
-+ C     DATA DIVER(2) / 00000000000000000000B /
-+ C     DATA LOG10(1) / 17164642023241175717B /
-+ C     DATA LOG10(2) / 16367571421742254654B /
-+ C
-+ C     MACHINE CONSTANTS FOR THE CELERITY C1260
-+ C
-+ C     DATA SMALL(1), SMALL(2) / Z'00100000', Z'00000000' /
-+ C     DATA LARGE(1), LARGE(2) / Z'7FEFFFFF', Z'FFFFFFFF' /
-+ C     DATA RIGHT(1), RIGHT(2) / Z'3CA00000', Z'00000000' /
-+ C     DATA DIVER(1), DIVER(2) / Z'3CB00000', Z'00000000' /
-+ C     DATA LOG10(1), LOG10(2) / Z'3FD34413', Z'509F79FF' /
-+ C
-+ C     MACHINE CONSTANTS FOR THE CONVEX
-+ C     USING THE -fn OR -pd8 COMPILER OPTION
-+ C
-+ C     DATA DMACH(1) / Z'0010000000000000' /
-+ C     DATA DMACH(2) / Z'7FFFFFFFFFFFFFFF' /
-+ C     DATA DMACH(3) / Z'3CC0000000000000' /
-+ C     DATA DMACH(4) / Z'3CD0000000000000' /
-+ C     DATA DMACH(5) / Z'3FF34413509F79FF' /
-+ C
-+ C     MACHINE CONSTANTS FOR THE CONVEX
-+ C     USING THE -fi COMPILER OPTION
-+ C
-+ C     DATA DMACH(1) / Z'0010000000000000' /
-+ C     DATA DMACH(2) / Z'7FEFFFFFFFFFFFFF' /
-+ C     DATA DMACH(3) / Z'3CA0000000000000' /
-+ C     DATA DMACH(4) / Z'3CB0000000000000' /
-+ C     DATA DMACH(5) / Z'3FD34413509F79FF' /
-+ C
-+ C     MACHINE CONSTANTS FOR THE CONVEX
-+ C     USING THE -p8 COMPILER OPTION
-+ C
-+ C     DATA DMACH(1) / Z'00010000000000000000000000000000' /
-+ C     DATA DMACH(2) / Z'7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF' /
-+ C     DATA DMACH(3) / Z'3F900000000000000000000000000000' /
-+ C     DATA DMACH(4) / Z'3F910000000000000000000000000000' /
-+ C     DATA DMACH(5) / Z'3FFF34413509F79FEF311F12B35816F9' /
-+ C
-+ C     MACHINE CONSTANTS FOR THE CRAY
-+ C
-+ C     DATA SMALL(1) / 201354000000000000000B /
-+ C     DATA SMALL(2) / 000000000000000000000B /
-+ C     DATA LARGE(1) / 577767777777777777777B /
-+ C     DATA LARGE(2) / 000007777777777777774B /
-+ C     DATA RIGHT(1) / 376434000000000000000B /
-+ C     DATA RIGHT(2) / 000000000000000000000B /
-+ C     DATA DIVER(1) / 376444000000000000000B /
-+ C     DATA DIVER(2) / 000000000000000000000B /
-+ C     DATA LOG10(1) / 377774642023241175717B /
-+ C     DATA LOG10(2) / 000007571421742254654B /
-+ C
-+ C     MACHINE CONSTANTS FOR THE DATA GENERAL ECLIPSE S/200
-+ C     NOTE - IT MAY BE APPROPRIATE TO INCLUDE THE FOLLOWING CARD -
-+ C     STATIC DMACH(5)
-+ C
-+ C     DATA SMALL /    20K, 3*0 /
-+ C     DATA LARGE / 77777K, 3*177777K /
-+ C     DATA RIGHT / 31420K, 3*0 /
-+ C     DATA DIVER / 32020K, 3*0 /
-+ C     DATA LOG10 / 40423K, 42023K, 50237K, 74776K /
-+ C
-+ C     MACHINE CONSTANTS FOR THE DEC ALPHA
-+ C     USING G_FLOAT
-+ C
-+ C     DATA DMACH(1) / '0000000000000010'X /
-+ C     DATA DMACH(2) / 'FFFFFFFFFFFF7FFF'X /
-+ C     DATA DMACH(3) / '0000000000003CC0'X /
-+ C     DATA DMACH(4) / '0000000000003CD0'X /
-+ C     DATA DMACH(5) / '79FF509F44133FF3'X /
-+ C
-+ C     MACHINE CONSTANTS FOR THE DEC ALPHA
-+ C     USING IEEE_FORMAT
-+ C
-+ C     DATA DMACH(1) / '0010000000000000'X /
-+ C     DATA DMACH(2) / '7FEFFFFFFFFFFFFF'X /
-+ C     DATA DMACH(3) / '3CA0000000000000'X /
-+ C     DATA DMACH(4) / '3CB0000000000000'X /
-+ C     DATA DMACH(5) / '3FD34413509F79FF'X /
-+ C
-+ C     MACHINE CONSTANTS FOR THE DEC RISC
-+ C
-+ C     DATA SMALL(1), SMALL(2) / Z'00000000', Z'00100000'/
-+ C     DATA LARGE(1), LARGE(2) / Z'FFFFFFFF', Z'7FEFFFFF'/
-+ C     DATA RIGHT(1), RIGHT(2) / Z'00000000', Z'3CA00000'/
-+ C     DATA DIVER(1), DIVER(2) / Z'00000000', Z'3CB00000'/
-+ C     DATA LOG10(1), LOG10(2) / Z'509F79FF', Z'3FD34413'/
-+ C
-+ C     MACHINE CONSTANTS FOR THE DEC VAX
-+ C     USING D_FLOATING
-+ C     (EXPRESSED IN INTEGER AND HEXADECIMAL)
-+ C     THE HEX FORMAT BELOW MAY NOT BE SUITABLE FOR UNIX SYSTEMS
-+ C     THE INTEGER FORMAT SHOULD BE OK FOR UNIX SYSTEMS
-+ C
-+ C     DATA SMALL(1), SMALL(2) /        128,           0 /
-+ C     DATA LARGE(1), LARGE(2) /     -32769,          -1 /
-+ C     DATA RIGHT(1), RIGHT(2) /       9344,           0 /
-+ C     DATA DIVER(1), DIVER(2) /       9472,           0 /
-+ C     DATA LOG10(1), LOG10(2) /  546979738,  -805796613 /
-+ C
-+ C     DATA SMALL(1), SMALL(2) / Z00000080, Z00000000 /
-+ C     DATA LARGE(1), LARGE(2) / ZFFFF7FFF, ZFFFFFFFF /
-+ C     DATA RIGHT(1), RIGHT(2) / Z00002480, Z00000000 /
-+ C     DATA DIVER(1), DIVER(2) / Z00002500, Z00000000 /
-+ C     DATA LOG10(1), LOG10(2) / Z209A3F9A, ZCFF884FB /
-+ C
-+ C     MACHINE CONSTANTS FOR THE DEC VAX
-+ C     USING G_FLOATING
-+ C     (EXPRESSED IN INTEGER AND HEXADECIMAL)
-+ C     THE HEX FORMAT BELOW MAY NOT BE SUITABLE FOR UNIX SYSTEMS
-+ C     THE INTEGER FORMAT SHOULD BE OK FOR UNIX SYSTEMS
-+ C
-+ C     DATA SMALL(1), SMALL(2) /         16,           0 /
-+ C     DATA LARGE(1), LARGE(2) /     -32769,          -1 /
-+ C     DATA RIGHT(1), RIGHT(2) /      15552,           0 /
-+ C     DATA DIVER(1), DIVER(2) /      15568,           0 /
-+ C     DATA LOG10(1), LOG10(2) /  1142112243, 2046775455 /
-+ C
-+ C     DATA SMALL(1), SMALL(2) / Z00000010, Z00000000 /
-+ C     DATA LARGE(1), LARGE(2) / ZFFFF7FFF, ZFFFFFFFF /
-+ C     DATA RIGHT(1), RIGHT(2) / Z00003CC0, Z00000000 /
-+ C     DATA DIVER(1), DIVER(2) / Z00003CD0, Z00000000 /
-+ C     DATA LOG10(1), LOG10(2) / Z44133FF3, Z79FF509F /
-+ C
-+ C     MACHINE CONSTANTS FOR THE ELXSI 6400
-+ C     (ASSUMING REAL*8 IS THE DEFAULT DOUBLE PRECISION)
-+ C
-+ C     DATA SMALL(1), SMALL(2) / '00100000'X,'00000000'X /
-+ C     DATA LARGE(1), LARGE(2) / '7FEFFFFF'X,'FFFFFFFF'X /
-+ C     DATA RIGHT(1), RIGHT(2) / '3CB00000'X,'00000000'X /
-+ C     DATA DIVER(1), DIVER(2) / '3CC00000'X,'00000000'X /
-+ C     DATA LOG10(1), LOG10(2) / '3FD34413'X,'509F79FF'X /
-+ C
-+ C     MACHINE CONSTANTS FOR THE HARRIS 220
-+ C
-+ C     DATA SMALL(1), SMALL(2) / '20000000, '00000201 /
-+ C     DATA LARGE(1), LARGE(2) / '37777777, '37777577 /
-+ C     DATA RIGHT(1), RIGHT(2) / '20000000, '00000333 /
-+ C     DATA DIVER(1), DIVER(2) / '20000000, '00000334 /
-+ C     DATA LOG10(1), LOG10(2) / '23210115, '10237777 /
-+ C
-+ C     MACHINE CONSTANTS FOR THE HONEYWELL 600/6000 SERIES
-+ C
-+ C     DATA SMALL(1), SMALL(2) / O402400000000, O000000000000 /
-+ C     DATA LARGE(1), LARGE(2) / O376777777777, O777777777777 /
-+ C     DATA RIGHT(1), RIGHT(2) / O604400000000, O000000000000 /
-+ C     DATA DIVER(1), DIVER(2) / O606400000000, O000000000000 /
-+ C     DATA LOG10(1), LOG10(2) / O776464202324, O117571775714 /
-+ C
-+ C     MACHINE CONSTANTS FOR THE HP 730
-+ C
-+ C     DATA DMACH(1) / Z'0010000000000000' /
-+ C     DATA DMACH(2) / Z'7FEFFFFFFFFFFFFF' /
-+ C     DATA DMACH(3) / Z'3CA0000000000000' /
-+ C     DATA DMACH(4) / Z'3CB0000000000000' /
-+ C     DATA DMACH(5) / Z'3FD34413509F79FF' /
-+ C
-+ C     MACHINE CONSTANTS FOR THE HP 2100
-+ C     THREE WORD DOUBLE PRECISION OPTION WITH FTN4
-+ C
-+ C     DATA SMALL(1), SMALL(2), SMALL(3) / 40000B,       0,       1 /
-+ C     DATA LARGE(1), LARGE(2), LARGE(3) / 77777B, 177777B, 177776B /
-+ C     DATA RIGHT(1), RIGHT(2), RIGHT(3) / 40000B,       0,    265B /
-+ C     DATA DIVER(1), DIVER(2), DIVER(3) / 40000B,       0,    276B /
-+ C     DATA LOG10(1), LOG10(2), LOG10(3) / 46420B,  46502B,  77777B /
-+ C
-+ C     MACHINE CONSTANTS FOR THE HP 2100
-+ C     FOUR WORD DOUBLE PRECISION OPTION WITH FTN4
-+ C
-+ C     DATA SMALL(1), SMALL(2) /  40000B,       0 /
-+ C     DATA SMALL(3), SMALL(4) /       0,       1 /
-+ C     DATA LARGE(1), LARGE(2) /  77777B, 177777B /
-+ C     DATA LARGE(3), LARGE(4) / 177777B, 177776B /
-+ C     DATA RIGHT(1), RIGHT(2) /  40000B,       0 /
-+ C     DATA RIGHT(3), RIGHT(4) /       0,    225B /
-+ C     DATA DIVER(1), DIVER(2) /  40000B,       0 /
-+ C     DATA DIVER(3), DIVER(4) /       0,    227B /
-+ C     DATA LOG10(1), LOG10(2) /  46420B,  46502B /
-+ C     DATA LOG10(3), LOG10(4) /  76747B, 176377B /
-+ C
-+ C     MACHINE CONSTANTS FOR THE HP 9000
-+ C
-+ C     DATA SMALL(1), SMALL(2) / 00040000000B, 00000000000B /
-+ C     DATA LARGE(1), LARGE(2) / 17737777777B, 37777777777B /
-+ C     DATA RIGHT(1), RIGHT(2) / 07454000000B, 00000000000B /
-+ C     DATA DIVER(1), DIVER(2) / 07460000000B, 00000000000B /
-+ C     DATA LOG10(1), LOG10(2) / 07764642023B, 12047674777B /
-+ C
-+ C     MACHINE CONSTANTS FOR THE IBM 360/370 SERIES,
-+ C     THE XEROX SIGMA 5/7/9, THE SEL SYSTEMS 85/86, AND
-+ C     THE PERKIN ELMER (INTERDATA) 7/32.
-+ C
-+ C     DATA SMALL(1), SMALL(2) / Z00100000, Z00000000 /
-+ C     DATA LARGE(1), LARGE(2) / Z7FFFFFFF, ZFFFFFFFF /
-+ C     DATA RIGHT(1), RIGHT(2) / Z33100000, Z00000000 /
-+ C     DATA DIVER(1), DIVER(2) / Z34100000, Z00000000 /
-+ C     DATA LOG10(1), LOG10(2) / Z41134413, Z509F79FF /
-+ C
-+ C     MACHINE CONSTANTS FOR THE IBM PC
-+ C     ASSUMES THAT ALL ARITHMETIC IS DONE IN DOUBLE PRECISION
-+ C     ON 8088, I.E., NOT IN 80 BIT FORM FOR THE 8087.
-+ C
-+ C     DATA SMALL(1) / 2.23D-308  /
-+ C     DATA LARGE(1) / 1.79D+308  /
-+ C     DATA RIGHT(1) / 1.11D-16   /
-+ C     DATA DIVER(1) / 2.22D-16   /
-+ C     DATA LOG10(1) / 0.301029995663981195D0 /
-+ C
-+ C     MACHINE CONSTANTS FOR THE IBM RS 6000
-+ C
-+ C     DATA DMACH(1) / Z'0010000000000000' /
-+ C     DATA DMACH(2) / Z'7FEFFFFFFFFFFFFF' /
-+ C     DATA DMACH(3) / Z'3CA0000000000000' /
-+ C     DATA DMACH(4) / Z'3CB0000000000000' /
-+ C     DATA DMACH(5) / Z'3FD34413509F79FF' /
-+ C
-+ C     MACHINE CONSTANTS FOR THE INTEL i860
-+ C
-+ C     DATA DMACH(1) / Z'0010000000000000' /
-+ C     DATA DMACH(2) / Z'7FEFFFFFFFFFFFFF' /
-+ C     DATA DMACH(3) / Z'3CA0000000000000' /
-+ C     DATA DMACH(4) / Z'3CB0000000000000' /
-+ C     DATA DMACH(5) / Z'3FD34413509F79FF' /
-+ C
-+ C     MACHINE CONSTANTS FOR THE PDP-10 (KA PROCESSOR)
-+ C
-+ C     DATA SMALL(1), SMALL(2) / "033400000000, "000000000000 /
-+ C     DATA LARGE(1), LARGE(2) / "377777777777, "344777777777 /
-+ C     DATA RIGHT(1), RIGHT(2) / "113400000000, "000000000000 /
-+ C     DATA DIVER(1), DIVER(2) / "114400000000, "000000000000 /
-+ C     DATA LOG10(1), LOG10(2) / "177464202324, "144117571776 /
-+ C
-+ C     MACHINE CONSTANTS FOR THE PDP-10 (KI PROCESSOR)
-+ C
-+ C     DATA SMALL(1), SMALL(2) / "000400000000, "000000000000 /
-+ C     DATA LARGE(1), LARGE(2) / "377777777777, "377777777777 /
-+ C     DATA RIGHT(1), RIGHT(2) / "103400000000, "000000000000 /
-+ C     DATA DIVER(1), DIVER(2) / "104400000000, "000000000000 /
-+ C     DATA LOG10(1), LOG10(2) / "177464202324, "476747767461 /
-+ C
-+ C     MACHINE CONSTANTS FOR PDP-11 FORTRAN SUPPORTING
-+ C     32-BIT INTEGERS (EXPRESSED IN INTEGER AND OCTAL).
-+ C
-+ C     DATA SMALL(1), SMALL(2) /    8388608,           0 /
-+ C     DATA LARGE(1), LARGE(2) / 2147483647,          -1 /
-+ C     DATA RIGHT(1), RIGHT(2) /  612368384,           0 /
-+ C     DATA DIVER(1), DIVER(2) /  620756992,           0 /
-+ C     DATA LOG10(1), LOG10(2) / 1067065498, -2063872008 /
-+ C
-+ C     DATA SMALL(1), SMALL(2) / O00040000000, O00000000000 /
-+ C     DATA LARGE(1), LARGE(2) / O17777777777, O37777777777 /
-+ C     DATA RIGHT(1), RIGHT(2) / O04440000000, O00000000000 /
-+ C     DATA DIVER(1), DIVER(2) / O04500000000, O00000000000 /
-+ C     DATA LOG10(1), LOG10(2) / O07746420232, O20476747770 /
-+ C
-+ C     MACHINE CONSTANTS FOR PDP-11 FORTRAN SUPPORTING
-+ C     16-BIT INTEGERS (EXPRESSED IN INTEGER AND OCTAL).
-+ C
-+ C     DATA SMALL(1), SMALL(2) /    128,      0 /
-+ C     DATA SMALL(3), SMALL(4) /      0,      0 /
-+ C     DATA LARGE(1), LARGE(2) /  32767,     -1 /
-+ C     DATA LARGE(3), LARGE(4) /     -1,     -1 /
-+ C     DATA RIGHT(1), RIGHT(2) /   9344,      0 /
-+ C     DATA RIGHT(3), RIGHT(4) /      0,      0 /
-+ C     DATA DIVER(1), DIVER(2) /   9472,      0 /
-+ C     DATA DIVER(3), DIVER(4) /      0,      0 /
-+ C     DATA LOG10(1), LOG10(2) /  16282,   8346 /
-+ C     DATA LOG10(3), LOG10(4) / -31493, -12296 /
-+ C
-+ C     DATA SMALL(1), SMALL(2) / O000200, O000000 /
-+ C     DATA SMALL(3), SMALL(4) / O000000, O000000 /
-+ C     DATA LARGE(1), LARGE(2) / O077777, O177777 /
-+ C     DATA LARGE(3), LARGE(4) / O177777, O177777 /
-+ C     DATA RIGHT(1), RIGHT(2) / O022200, O000000 /
-+ C     DATA RIGHT(3), RIGHT(4) / O000000, O000000 /
-+ C     DATA DIVER(1), DIVER(2) / O022400, O000000 /
-+ C     DATA DIVER(3), DIVER(4) / O000000, O000000 /
-+ C     DATA LOG10(1), LOG10(2) / O037632, O020232 /
-+ C     DATA LOG10(3), LOG10(4) / O102373, O147770 /
-+ C
-+ C     MACHINE CONSTANTS FOR THE SILICON GRAPHICS
-+ C
-+ C     DATA SMALL(1), SMALL(2) / Z'00100000', Z'00000000' /
-+ C     DATA LARGE(1), LARGE(2) / Z'7FEFFFFF', Z'FFFFFFFF' /
-+ C     DATA RIGHT(1), RIGHT(2) / Z'3CA00000', Z'00000000' /
-+ C     DATA DIVER(1), DIVER(2) / Z'3CB00000', Z'00000000' /
-+ C     DATA LOG10(1), LOG10(2) / Z'3FD34413', Z'509F79FF' /
-+ C
-+ C     MACHINE CONSTANTS FOR THE SUN
-+ C
-+ C     DATA DMACH(1) / Z'0010000000000000' /
-+ C     DATA DMACH(2) / Z'7FEFFFFFFFFFFFFF' /
-+ C     DATA DMACH(3) / Z'3CA0000000000000' /
-+ C     DATA DMACH(4) / Z'3CB0000000000000' /
-+ C     DATA DMACH(5) / Z'3FD34413509F79FF' /
-+ C
-+ C     MACHINE CONSTANTS FOR THE SUN
-+ C     USING THE -r8 COMPILER OPTION
-+ C
-+ C     DATA DMACH(1) / Z'00010000000000000000000000000000' /
-+ C     DATA DMACH(2) / Z'7FFEFFFFFFFFFFFFFFFFFFFFFFFFFFFF' /
-+ C     DATA DMACH(3) / Z'3F8E0000000000000000000000000000' /
-+ C     DATA DMACH(4) / Z'3F8F0000000000000000000000000000' /
-+ C     DATA DMACH(5) / Z'3FFD34413509F79FEF311F12B35816F9' /
-+ C
-+ C     MACHINE CONSTANTS FOR THE SUN 386i
-+ C
-+ C     DATA SMALL(1), SMALL(2) / Z'FFFFFFFD', Z'000FFFFF' /
-+ C     DATA LARGE(1), LARGE(2) / Z'FFFFFFB0', Z'7FEFFFFF' /
-+ C     DATA RIGHT(1), RIGHT(2) / Z'000000B0', Z'3CA00000' /
-+ C     DATA DIVER(1), DIVER(2) / Z'FFFFFFCB', Z'3CAFFFFF'
-+ C     DATA LOG10(1), LOG10(2) / Z'509F79E9', Z'3FD34413' /
-+ C
-+ C     MACHINE CONSTANTS FOR THE UNIVAC 1100 SERIES FTN COMPILER
-+ C
-+ C     DATA SMALL(1), SMALL(2) / O000040000000, O000000000000 /
-+ C     DATA LARGE(1), LARGE(2) / O377777777777, O777777777777 /
-+ C     DATA RIGHT(1), RIGHT(2) / O170540000000, O000000000000 /
-+ C     DATA DIVER(1), DIVER(2) / O170640000000, O000000000000 /
-+ C     DATA LOG10(1), LOG10(2) / O177746420232, O411757177572 /
-+ C
-+ C***FIRST EXECUTABLE STATEMENT  D1MACH
-+       IF (I .LT. 1 .OR. I .GT. 5) CALL XERMSG ('SLATEC', 'D1MACH',
-+      +   'I OUT OF BOUNDS', 1, 2)
-+ C
-+ 	if (iflag.eq.0) then
-+ 	   iflag=1
-+ 	   dmach(1)=dlamch('u')
-+ 	   dmach(2)=dlamch('o')
-+ 	   dmach(3)=dlamch('e')
-+ 	   dmach(4)=dlamch('p')
-+ 	   dmach(5)=dlamch('b')
-+ 	   dmach(5)=log10(dmach(5))
-+ 	endif
-+       D1MACH = DMACH(I)
-+       RETURN
-+ C
-+       END
-diff -crNb clean/i1mach.f with_make/i1mach.f
-*** clean/i1mach.f	1970-01-01 09:00:00.000000000 +0900
---- with_make/i1mach.f	1999-10-07 06:10:33.000000000 +0900
-***************
-*** 0 ****
---- 1,888 ----
-+ *DECK I1MACH
-+       INTEGER FUNCTION I1MACH (I)
-+ C***BEGIN PROLOGUE  I1MACH
-+ C***PURPOSE  Return integer machine dependent constants.
-+ C***LIBRARY   SLATEC
-+ C***CATEGORY  R1
-+ C***TYPE      INTEGER (I1MACH-I)
-+ C***KEYWORDS  MACHINE CONSTANTS
-+ C***AUTHOR  Fox, P. A., (Bell Labs)
-+ C           Hall, A. D., (Bell Labs)
-+ C           Schryer, N. L., (Bell Labs)
-+ C***DESCRIPTION
-+ C
-+ C   I1MACH can be used to obtain machine-dependent parameters for the
-+ C   local machine environment.  It is a function subprogram with one
-+ C   (input) argument and can be referenced as follows:
-+ C
-+ C        K = I1MACH(I)
-+ C
-+ C   where I=1,...,16.  The (output) value of K above is determined by
-+ C   the (input) value of I.  The results for various values of I are
-+ C   discussed below.
-+ C
-+ C   I/O unit numbers:
-+ C     I1MACH( 1) = the standard input unit.
-+ C     I1MACH( 2) = the standard output unit.
-+ C     I1MACH( 3) = the standard punch unit.
-+ C     I1MACH( 4) = the standard error message unit.
-+ C
-+ C   Words:
-+ C     I1MACH( 5) = the number of bits per integer storage unit.
-+ C     I1MACH( 6) = the number of characters per integer storage unit.
-+ C
-+ C   Integers:
-+ C     assume integers are represented in the S-digit, base-A form
-+ C
-+ C                sign ( X(S-1)*A**(S-1) + ... + X(1)*A + X(0) )
-+ C
-+ C                where 0 .LE. X(I) .LT. A for I=0,...,S-1.
-+ C     I1MACH( 7) = A, the base.
-+ C     I1MACH( 8) = S, the number of base-A digits.
-+ C     I1MACH( 9) = A**S - 1, the largest magnitude.
-+ C
-+ C   Floating-Point Numbers:
-+ C     Assume floating-point numbers are represented in the T-digit,
-+ C     base-B form
-+ C                sign (B**E)*( (X(1)/B) + ... + (X(T)/B**T) )
-+ C
-+ C                where 0 .LE. X(I) .LT. B for I=1,...,T,
-+ C                0 .LT. X(1), and EMIN .LE. E .LE. EMAX.
-+ C     I1MACH(10) = B, the base.
-+ C
-+ C   Single-Precision:
-+ C     I1MACH(11) = T, the number of base-B digits.
-+ C     I1MACH(12) = EMIN, the smallest exponent E.
-+ C     I1MACH(13) = EMAX, the largest exponent E.
-+ C
-+ C   Double-Precision:
-+ C     I1MACH(14) = T, the number of base-B digits.
-+ C     I1MACH(15) = EMIN, the smallest exponent E.
-+ C     I1MACH(16) = EMAX, the largest exponent E.
-+ C
-+ C   To alter this function for a particular environment, the desired
-+ C   set of DATA statements should be activated by removing the C from
-+ C   column 1.  Also, the values of I1MACH(1) - I1MACH(4) should be
-+ C   checked for consistency with the local operating system.
-+ C
-+ C***REFERENCES  P. A. Fox, A. D. Hall and N. L. Schryer, Framework for
-+ C                 a portable library, ACM Transactions on Mathematical
-+ C                 Software 4, 2 (June 1978), pp. 177-188.
-+ C***ROUTINES CALLED  (NONE)
-+ C***REVISION HISTORY  (YYMMDD)
-+ C   750101  DATE WRITTEN
-+ C   891012  Added VAX G-floating constants.  (WRB)
-+ C   891012  REVISION DATE from Version 3.2
-+ C   891214  Prologue converted to Version 4.0 format.  (BAB)
-+ C   900618  Added DEC RISC constants.  (WRB)
-+ C   900723  Added IBM RS 6000 constants.  (WRB)
-+ C   901009  Correct I1MACH(7) for IBM Mainframes. Should be 2 not 16.
-+ C           (RWC)
-+ C   910710  Added HP 730 constants.  (SMR)
-+ C   911114  Added Convex IEEE constants.  (WRB)
-+ C   920121  Added SUN -r8 compiler option constants.  (WRB)
-+ C   920229  Added Touchstone Delta i860 constants.  (WRB)
-+ C   920501  Reformatted the REFERENCES section.  (WRB)
-+ C   920625  Added Convex -p8 and -pd8 compiler option constants.
-+ C           (BKS, WRB)
-+ C   930201  Added DEC Alpha and SGI constants.  (RWC and WRB)
-+ C   930618  Corrected I1MACH(5) for Convex -p8 and -pd8 compiler
-+ C           options.  (DWL, RWC and WRB).
-+ C***END PROLOGUE  I1MACH
-+ C
-+       INTEGER IMACH(16),OUTPUT
-+       SAVE IMACH
-+       EQUIVALENCE (IMACH(4),OUTPUT)
-+ C
-+ C     MACHINE CONSTANTS FOR THE AMIGA
-+ C     ABSOFT COMPILER
-+ C
-+ C     DATA IMACH( 1) /          5 /
-+ C     DATA IMACH( 2) /          6 /
-+ C     DATA IMACH( 3) /          5 /
-+ C     DATA IMACH( 4) /          6 /
-+ C     DATA IMACH( 5) /         32 /
-+ C     DATA IMACH( 6) /          4 /
-+ C     DATA IMACH( 7) /          2 /
-+ C     DATA IMACH( 8) /         31 /
-+ C     DATA IMACH( 9) / 2147483647 /
-+ C     DATA IMACH(10) /          2 /
-+ C     DATA IMACH(11) /         24 /
-+ C     DATA IMACH(12) /       -126 /
-+ C     DATA IMACH(13) /        127 /
-+ C     DATA IMACH(14) /         53 /
-+ C     DATA IMACH(15) /      -1022 /
-+ C     DATA IMACH(16) /       1023 /
-+ C
-+ C     MACHINE CONSTANTS FOR THE APOLLO
-+ C
-+ C     DATA IMACH( 1) /          5 /
-+ C     DATA IMACH( 2) /          6 /
-+ C     DATA IMACH( 3) /          6 /
-+ C     DATA IMACH( 4) /          6 /
-+ C     DATA IMACH( 5) /         32 /
-+ C     DATA IMACH( 6) /          4 /
-+ C     DATA IMACH( 7) /          2 /
-+ C     DATA IMACH( 8) /         31 /
-+ C     DATA IMACH( 9) / 2147483647 /
-+ C     DATA IMACH(10) /          2 /
-+ C     DATA IMACH(11) /         24 /
-+ C     DATA IMACH(12) /       -125 /
-+ C     DATA IMACH(13) /        129 /
-+ C     DATA IMACH(14) /         53 /
-+ C     DATA IMACH(15) /      -1021 /
-+ C     DATA IMACH(16) /       1025 /
-+ C
-+ C     MACHINE CONSTANTS FOR THE BURROUGHS 1700 SYSTEM
-+ C
-+ C     DATA IMACH( 1) /          7 /
-+ C     DATA IMACH( 2) /          2 /
-+ C     DATA IMACH( 3) /          2 /
-+ C     DATA IMACH( 4) /          2 /
-+ C     DATA IMACH( 5) /         36 /
-+ C     DATA IMACH( 6) /          4 /
-+ C     DATA IMACH( 7) /          2 /
-+ C     DATA IMACH( 8) /         33 /
-+ C     DATA IMACH( 9) / Z1FFFFFFFF /
-+ C     DATA IMACH(10) /          2 /
-+ C     DATA IMACH(11) /         24 /
-+ C     DATA IMACH(12) /       -256 /
-+ C     DATA IMACH(13) /        255 /
-+ C     DATA IMACH(14) /         60 /
-+ C     DATA IMACH(15) /       -256 /
-+ C     DATA IMACH(16) /        255 /
-+ C
-+ C     MACHINE CONSTANTS FOR THE BURROUGHS 5700 SYSTEM
-+ C
-+ C     DATA IMACH( 1) /          5 /
-+ C     DATA IMACH( 2) /          6 /
-+ C     DATA IMACH( 3) /          7 /
-+ C     DATA IMACH( 4) /          6 /
-+ C     DATA IMACH( 5) /         48 /
-+ C     DATA IMACH( 6) /          6 /
-+ C     DATA IMACH( 7) /          2 /
-+ C     DATA IMACH( 8) /         39 /
-+ C     DATA IMACH( 9) / O0007777777777777 /
-+ C     DATA IMACH(10) /          8 /
-+ C     DATA IMACH(11) /         13 /
-+ C     DATA IMACH(12) /        -50 /
-+ C     DATA IMACH(13) /         76 /
-+ C     DATA IMACH(14) /         26 /
-+ C     DATA IMACH(15) /        -50 /
-+ C     DATA IMACH(16) /         76 /
-+ C
-+ C     MACHINE CONSTANTS FOR THE BURROUGHS 6700/7700 SYSTEMS
-+ C
-+ C     DATA IMACH( 1) /          5 /
-+ C     DATA IMACH( 2) /          6 /
-+ C     DATA IMACH( 3) /          7 /
-+ C     DATA IMACH( 4) /          6 /
-+ C     DATA IMACH( 5) /         48 /
-+ C     DATA IMACH( 6) /          6 /
-+ C     DATA IMACH( 7) /          2 /
-+ C     DATA IMACH( 8) /         39 /
-+ C     DATA IMACH( 9) / O0007777777777777 /
-+ C     DATA IMACH(10) /          8 /
-+ C     DATA IMACH(11) /         13 /
-+ C     DATA IMACH(12) /        -50 /
-+ C     DATA IMACH(13) /         76 /
-+ C     DATA IMACH(14) /         26 /
-+ C     DATA IMACH(15) /     -32754 /
-+ C     DATA IMACH(16) /      32780 /
-+ C
-+ C     MACHINE CONSTANTS FOR THE CDC 170/180 SERIES USING NOS/VE
-+ C
-+ C     DATA IMACH( 1) /          5 /
-+ C     DATA IMACH( 2) /          6 /
-+ C     DATA IMACH( 3) /          7 /
-+ C     DATA IMACH( 4) /          6 /
-+ C     DATA IMACH( 5) /         64 /
-+ C     DATA IMACH( 6) /          8 /
-+ C     DATA IMACH( 7) /          2 /
-+ C     DATA IMACH( 8) /         63 /
-+ C     DATA IMACH( 9) / 9223372036854775807 /
-+ C     DATA IMACH(10) /          2 /
-+ C     DATA IMACH(11) /         47 /
-+ C     DATA IMACH(12) /      -4095 /
-+ C     DATA IMACH(13) /       4094 /
-+ C     DATA IMACH(14) /         94 /
-+ C     DATA IMACH(15) /      -4095 /
-+ C     DATA IMACH(16) /       4094 /
-+ C
-+ C     MACHINE CONSTANTS FOR THE CDC 6000/7000 SERIES
-+ C
-+ C     DATA IMACH( 1) /          5 /
-+ C     DATA IMACH( 2) /          6 /
-+ C     DATA IMACH( 3) /          7 /
-+ C     DATA IMACH( 4) /    6LOUTPUT/
-+ C     DATA IMACH( 5) /         60 /
-+ C     DATA IMACH( 6) /         10 /
-+ C     DATA IMACH( 7) /          2 /
-+ C     DATA IMACH( 8) /         48 /
-+ C     DATA IMACH( 9) / 00007777777777777777B /
-+ C     DATA IMACH(10) /          2 /
-+ C     DATA IMACH(11) /         47 /
-+ C     DATA IMACH(12) /       -929 /
-+ C     DATA IMACH(13) /       1070 /
-+ C     DATA IMACH(14) /         94 /
-+ C     DATA IMACH(15) /       -929 /
-+ C     DATA IMACH(16) /       1069 /
-+ C
-+ C     MACHINE CONSTANTS FOR THE CELERITY C1260
-+ C
-+ C     DATA IMACH( 1) /          5 /
-+ C     DATA IMACH( 2) /          6 /
-+ C     DATA IMACH( 3) /          6 /
-+ C     DATA IMACH( 4) /          0 /
-+ C     DATA IMACH( 5) /         32 /
-+ C     DATA IMACH( 6) /          4 /
-+ C     DATA IMACH( 7) /          2 /
-+ C     DATA IMACH( 8) /         31 /
-+ C     DATA IMACH( 9) / Z'7FFFFFFF' /
-+ C     DATA IMACH(10) /          2 /
-+ C     DATA IMACH(11) /         24 /
-+ C     DATA IMACH(12) /       -126 /
-+ C     DATA IMACH(13) /        127 /
-+ C     DATA IMACH(14) /         53 /
-+ C     DATA IMACH(15) /      -1022 /
-+ C     DATA IMACH(16) /       1023 /
-+ C
-+ C     MACHINE CONSTANTS FOR THE CONVEX
-+ C     USING THE -fn COMPILER OPTION
-+ C
-+ C     DATA IMACH( 1) /          5 /
-+ C     DATA IMACH( 2) /          6 /
-+ C     DATA IMACH( 3) /          7 /
-+ C     DATA IMACH( 4) /          6 /
-+ C     DATA IMACH( 5) /         32 /
-+ C     DATA IMACH( 6) /          4 /
-+ C     DATA IMACH( 7) /          2 /
-+ C     DATA IMACH( 8) /         31 /
-+ C     DATA IMACH( 9) / 2147483647 /
-+ C     DATA IMACH(10) /          2 /
-+ C     DATA IMACH(11) /         24 /
-+ C     DATA IMACH(12) /       -127 /
-+ C     DATA IMACH(13) /        127 /
-+ C     DATA IMACH(14) /         53 /
-+ C     DATA IMACH(15) /      -1023 /
-+ C     DATA IMACH(16) /       1023 /
-+ C
-+ C     MACHINE CONSTANTS FOR THE CONVEX
-+ C     USING THE -fi COMPILER OPTION
-+ C
-+ C     DATA IMACH( 1) /          5 /
-+ C     DATA IMACH( 2) /          6 /
-+ C     DATA IMACH( 3) /          7 /
-+ C     DATA IMACH( 4) /          6 /
-+ C     DATA IMACH( 5) /         32 /
-+ C     DATA IMACH( 6) /          4 /
-+ C     DATA IMACH( 7) /          2 /
-+ C     DATA IMACH( 8) /         31 /
-+ C     DATA IMACH( 9) / 2147483647 /
-+ C     DATA IMACH(10) /          2 /
-+ C     DATA IMACH(11) /         24 /
-+ C     DATA IMACH(12) /       -125 /
-+ C     DATA IMACH(13) /        128 /
-+ C     DATA IMACH(14) /         53 /
-+ C     DATA IMACH(15) /      -1021 /
-+ C     DATA IMACH(16) /       1024 /
-+ C
-+ C     MACHINE CONSTANTS FOR THE CONVEX
-+ C     USING THE -p8 COMPILER OPTION
-+ C
-+ C     DATA IMACH( 1) /          5 /
-+ C     DATA IMACH( 2) /          6 /
-+ C     DATA IMACH( 3) /          7 /
-+ C     DATA IMACH( 4) /          6 /
-+ C     DATA IMACH( 5) /         64 /
-+ C     DATA IMACH( 6) /          4 /
-+ C     DATA IMACH( 7) /          2 /
-+ C     DATA IMACH( 8) /         63 /
-+ C     DATA IMACH( 9) / 9223372036854775807 /
-+ C     DATA IMACH(10) /          2 /
-+ C     DATA IMACH(11) /         53 /
-+ C     DATA IMACH(12) /      -1023 /
-+ C     DATA IMACH(13) /       1023 /
-+ C     DATA IMACH(14) /        113 /
-+ C     DATA IMACH(15) /     -16383 /
-+ C     DATA IMACH(16) /      16383 /
-+ C
-+ C     MACHINE CONSTANTS FOR THE CONVEX
-+ C     USING THE -pd8 COMPILER OPTION
-+ C
-+ C     DATA IMACH( 1) /          5 /
-+ C     DATA IMACH( 2) /          6 /
-+ C     DATA IMACH( 3) /          7 /
-+ C     DATA IMACH( 4) /          6 /
-+ C     DATA IMACH( 5) /         64 /
-+ C     DATA IMACH( 6) /          4 /
-+ C     DATA IMACH( 7) /          2 /
-+ C     DATA IMACH( 8) /         63 /
-+ C     DATA IMACH( 9) / 9223372036854775807 /
-+ C     DATA IMACH(10) /          2 /
-+ C     DATA IMACH(11) /         53 /
-+ C     DATA IMACH(12) /      -1023 /
-+ C     DATA IMACH(13) /       1023 /
-+ C     DATA IMACH(14) /         53 /
-+ C     DATA IMACH(15) /      -1023 /
-+ C     DATA IMACH(16) /       1023 /
-+ C
-+ C     MACHINE CONSTANTS FOR THE CRAY
-+ C     USING THE 46 BIT INTEGER COMPILER OPTION
-+ C
-+ C     DATA IMACH( 1) /        100 /
-+ C     DATA IMACH( 2) /        101 /
-+ C     DATA IMACH( 3) /        102 /
-+ C     DATA IMACH( 4) /        101 /
-+ C     DATA IMACH( 5) /         64 /
-+ C     DATA IMACH( 6) /          8 /
-+ C     DATA IMACH( 7) /          2 /
-+ C     DATA IMACH( 8) /         46 /
-+ C     DATA IMACH( 9) / 1777777777777777B /
-+ C     DATA IMACH(10) /          2 /
-+ C     DATA IMACH(11) /         47 /
-+ C     DATA IMACH(12) /      -8189 /
-+ C     DATA IMACH(13) /       8190 /
-+ C     DATA IMACH(14) /         94 /
-+ C     DATA IMACH(15) /      -8099 /
-+ C     DATA IMACH(16) /       8190 /
-+ C
-+ C     MACHINE CONSTANTS FOR THE CRAY
-+ C     USING THE 64 BIT INTEGER COMPILER OPTION
-+ C
-+ C     DATA IMACH( 1) /        100 /
-+ C     DATA IMACH( 2) /        101 /
-+ C     DATA IMACH( 3) /        102 /
-+ C     DATA IMACH( 4) /        101 /
-+ C     DATA IMACH( 5) /         64 /
-+ C     DATA IMACH( 6) /          8 /
-+ C     DATA IMACH( 7) /          2 /
-+ C     DATA IMACH( 8) /         63 /
-+ C     DATA IMACH( 9) / 777777777777777777777B /
-+ C     DATA IMACH(10) /          2 /
-+ C     DATA IMACH(11) /         47 /
-+ C     DATA IMACH(12) /      -8189 /
-+ C     DATA IMACH(13) /       8190 /
-+ C     DATA IMACH(14) /         94 /
-+ C     DATA IMACH(15) /      -8099 /
-+ C     DATA IMACH(16) /       8190 /
-+ C
-+ C     MACHINE CONSTANTS FOR THE DATA GENERAL ECLIPSE S/200
-+ C
-+ C     DATA IMACH( 1) /         11 /
-+ C     DATA IMACH( 2) /         12 /
-+ C     DATA IMACH( 3) /          8 /
-+ C     DATA IMACH( 4) /         10 /
-+ C     DATA IMACH( 5) /         16 /
-+ C     DATA IMACH( 6) /          2 /
-+ C     DATA IMACH( 7) /          2 /
-+ C     DATA IMACH( 8) /         15 /
-+ C     DATA IMACH( 9) /      32767 /
-+ C     DATA IMACH(10) /         16 /
-+ C     DATA IMACH(11) /          6 /
-+ C     DATA IMACH(12) /        -64 /
-+ C     DATA IMACH(13) /         63 /
-+ C     DATA IMACH(14) /         14 /
-+ C     DATA IMACH(15) /        -64 /
-+ C     DATA IMACH(16) /         63 /
-+ C
-+ C     MACHINE CONSTANTS FOR THE DEC ALPHA
-+ C     USING G_FLOAT
-+ C
-+ C     DATA IMACH( 1) /          5 /
-+ C     DATA IMACH( 2) /          6 /
-+ C     DATA IMACH( 3) /          5 /
-+ C     DATA IMACH( 4) /          6 /
-+ C     DATA IMACH( 5) /         32 /
-+ C     DATA IMACH( 6) /          4 /
-+ C     DATA IMACH( 7) /          2 /
-+ C     DATA IMACH( 8) /         31 /
-+ C     DATA IMACH( 9) / 2147483647 /
-+ C     DATA IMACH(10) /          2 /
-+ C     DATA IMACH(11) /         24 /
-+ C     DATA IMACH(12) /       -127 /
-+ C     DATA IMACH(13) /        127 /
-+ C     DATA IMACH(14) /         53 /
-+ C     DATA IMACH(15) /      -1023 /
-+ C     DATA IMACH(16) /       1023 /
-+ C
-+ C     MACHINE CONSTANTS FOR THE DEC ALPHA
-+ C     USING IEEE_FLOAT
-+ C
-+ C     DATA IMACH( 1) /          5 /
-+ C     DATA IMACH( 2) /          6 /
-+ C     DATA IMACH( 3) /          6 /
-+ C     DATA IMACH( 4) /          6 /
-+ C     DATA IMACH( 5) /         32 /
-+ C     DATA IMACH( 6) /          4 /
-+ C     DATA IMACH( 7) /          2 /
-+ C     DATA IMACH( 8) /         31 /
-+ C     DATA IMACH( 9) / 2147483647 /
-+ C     DATA IMACH(10) /          2 /
-+ C     DATA IMACH(11) /         24 /
-+ C     DATA IMACH(12) /       -125 /
-+ C     DATA IMACH(13) /        128 /
-+ C     DATA IMACH(14) /         53 /
-+ C     DATA IMACH(15) /      -1021 /
-+ C     DATA IMACH(16) /       1024 /
-+ C
-+ C     MACHINE CONSTANTS FOR THE DEC RISC
-+ C
-+ C     DATA IMACH( 1) /          5 /
-+ C     DATA IMACH( 2) /          6 /
-+ C     DATA IMACH( 3) /          6 /
-+ C     DATA IMACH( 4) /          6 /
-+ C     DATA IMACH( 5) /         32 /
-+ C     DATA IMACH( 6) /          4 /
-+ C     DATA IMACH( 7) /          2 /
-+ C     DATA IMACH( 8) /         31 /
-+ C     DATA IMACH( 9) / 2147483647 /
-+ C     DATA IMACH(10) /          2 /
-+ C     DATA IMACH(11) /         24 /
-+ C     DATA IMACH(12) /       -125 /
-+ C     DATA IMACH(13) /        128 /
-+ C     DATA IMACH(14) /         53 /
-+ C     DATA IMACH(15) /      -1021 /
-+ C     DATA IMACH(16) /       1024 /
-+ C
-+ C     MACHINE CONSTANTS FOR THE DEC VAX
-+ C     USING D_FLOATING
-+ C
-+ C     DATA IMACH( 1) /          5 /
-+ C     DATA IMACH( 2) /          6 /
-+ C     DATA IMACH( 3) /          5 /
-+ C     DATA IMACH( 4) /          6 /
-+ C     DATA IMACH( 5) /         32 /
-+ C     DATA IMACH( 6) /          4 /
-+ C     DATA IMACH( 7) /          2 /
-+ C     DATA IMACH( 8) /         31 /
-+ C     DATA IMACH( 9) / 2147483647 /
-+ C     DATA IMACH(10) /          2 /
-+ C     DATA IMACH(11) /         24 /
-+ C     DATA IMACH(12) /       -127 /
-+ C     DATA IMACH(13) /        127 /
-+ C     DATA IMACH(14) /         56 /
-+ C     DATA IMACH(15) /       -127 /
-+ C     DATA IMACH(16) /        127 /
-+ C
-+ C     MACHINE CONSTANTS FOR THE DEC VAX
-+ C     USING G_FLOATING
-+ C
-+ C     DATA IMACH( 1) /          5 /
-+ C     DATA IMACH( 2) /          6 /
-+ C     DATA IMACH( 3) /          5 /
-+ C     DATA IMACH( 4) /          6 /
-+ C     DATA IMACH( 5) /         32 /
-+ C     DATA IMACH( 6) /          4 /
-+ C     DATA IMACH( 7) /          2 /
-+ C     DATA IMACH( 8) /         31 /
-+ C     DATA IMACH( 9) / 2147483647 /
-+ C     DATA IMACH(10) /          2 /
-+ C     DATA IMACH(11) /         24 /
-+ C     DATA IMACH(12) /       -127 /
-+ C     DATA IMACH(13) /        127 /
-+ C     DATA IMACH(14) /         53 /
-+ C     DATA IMACH(15) /      -1023 /
-+ C     DATA IMACH(16) /       1023 /
-+ C
-+ C     MACHINE CONSTANTS FOR THE ELXSI 6400
-+ C
-+ C     DATA IMACH( 1) /          5 /
-+ C     DATA IMACH( 2) /          6 /
-+ C     DATA IMACH( 3) /          6 /
-+ C     DATA IMACH( 4) /          6 /
-+ C     DATA IMACH( 5) /         32 /
-+ C     DATA IMACH( 6) /          4 /
-+ C     DATA IMACH( 7) /          2 /
-+ C     DATA IMACH( 8) /         32 /
-+ C     DATA IMACH( 9) / 2147483647 /
-+ C     DATA IMACH(10) /          2 /
-+ C     DATA IMACH(11) /         24 /
-+ C     DATA IMACH(12) /       -126 /
-+ C     DATA IMACH(13) /        127 /
-+ C     DATA IMACH(14) /         53 /
-+ C     DATA IMACH(15) /      -1022 /
-+ C     DATA IMACH(16) /       1023 /
-+ C
-+ C     MACHINE CONSTANTS FOR THE HARRIS 220
-+ C
-+ C     DATA IMACH( 1) /          5 /
-+ C     DATA IMACH( 2) /          6 /
-+ C     DATA IMACH( 3) /          0 /
-+ C     DATA IMACH( 4) /          6 /
-+ C     DATA IMACH( 5) /         24 /
-+ C     DATA IMACH( 6) /          3 /
-+ C     DATA IMACH( 7) /          2 /
-+ C     DATA IMACH( 8) /         23 /
-+ C     DATA IMACH( 9) /    8388607 /
-+ C     DATA IMACH(10) /          2 /
-+ C     DATA IMACH(11) /         23 /
-+ C     DATA IMACH(12) /       -127 /
-+ C     DATA IMACH(13) /        127 /
-+ C     DATA IMACH(14) /         38 /
-+ C     DATA IMACH(15) /       -127 /
-+ C     DATA IMACH(16) /        127 /
-+ C
-+ C     MACHINE CONSTANTS FOR THE HONEYWELL 600/6000 SERIES
-+ C
-+ C     DATA IMACH( 1) /          5 /
-+ C     DATA IMACH( 2) /          6 /
-+ C     DATA IMACH( 3) /         43 /
-+ C     DATA IMACH( 4) /          6 /
-+ C     DATA IMACH( 5) /         36 /
-+ C     DATA IMACH( 6) /          6 /
-+ C     DATA IMACH( 7) /          2 /
-+ C     DATA IMACH( 8) /         35 /
-+ C     DATA IMACH( 9) / O377777777777 /
-+ C     DATA IMACH(10) /          2 /
-+ C     DATA IMACH(11) /         27 /
-+ C     DATA IMACH(12) /       -127 /
-+ C     DATA IMACH(13) /        127 /
-+ C     DATA IMACH(14) /         63 /
-+ C     DATA IMACH(15) /       -127 /
-+ C     DATA IMACH(16) /        127 /
-+ C
-+ C     MACHINE CONSTANTS FOR THE HP 730
-+ C
-+ C     DATA IMACH( 1) /          5 /
-+ C     DATA IMACH( 2) /          6 /
-+ C     DATA IMACH( 3) /          6 /
-+ C     DATA IMACH( 4) /          6 /
-+ C     DATA IMACH( 5) /         32 /
-+ C     DATA IMACH( 6) /          4 /
-+ C     DATA IMACH( 7) /          2 /
-+ C     DATA IMACH( 8) /         31 /
-+ C     DATA IMACH( 9) / 2147483647 /
-+ C     DATA IMACH(10) /          2 /
-+ C     DATA IMACH(11) /         24 /
-+ C     DATA IMACH(12) /       -125 /
-+ C     DATA IMACH(13) /        128 /
-+ C     DATA IMACH(14) /         53 /
-+ C     DATA IMACH(15) /      -1021 /
-+ C     DATA IMACH(16) /       1024 /
-+ C
-+ C     MACHINE CONSTANTS FOR THE HP 2100
-+ C     3 WORD DOUBLE PRECISION OPTION WITH FTN4
-+ C
-+ C     DATA IMACH( 1) /          5 /
-+ C     DATA IMACH( 2) /          6 /
-+ C     DATA IMACH( 3) /          4 /
-+ C     DATA IMACH( 4) /          1 /
-+ C     DATA IMACH( 5) /         16 /
-+ C     DATA IMACH( 6) /          2 /
-+ C     DATA IMACH( 7) /          2 /
-+ C     DATA IMACH( 8) /         15 /
-+ C     DATA IMACH( 9) /      32767 /
-+ C     DATA IMACH(10) /          2 /
-+ C     DATA IMACH(11) /         23 /
-+ C     DATA IMACH(12) /       -128 /
-+ C     DATA IMACH(13) /        127 /
-+ C     DATA IMACH(14) /         39 /
-+ C     DATA IMACH(15) /       -128 /
-+ C     DATA IMACH(16) /        127 /
-+ C
-+ C     MACHINE CONSTANTS FOR THE HP 2100
-+ C     4 WORD DOUBLE PRECISION OPTION WITH FTN4
-+ C
-+ C     DATA IMACH( 1) /          5 /
-+ C     DATA IMACH( 2) /          6 /
-+ C     DATA IMACH( 3) /          4 /
-+ C     DATA IMACH( 4) /          1 /
-+ C     DATA IMACH( 5) /         16 /
-+ C     DATA IMACH( 6) /          2 /
-+ C     DATA IMACH( 7) /          2 /
-+ C     DATA IMACH( 8) /         15 /
-+ C     DATA IMACH( 9) /      32767 /
-+ C     DATA IMACH(10) /          2 /
-+ C     DATA IMACH(11) /         23 /
-+ C     DATA IMACH(12) /       -128 /
-+ C     DATA IMACH(13) /        127 /
-+ C     DATA IMACH(14) /         55 /
-+ C     DATA IMACH(15) /       -128 /
-+ C     DATA IMACH(16) /        127 /
-+ C
-+ C     MACHINE CONSTANTS FOR THE HP 9000
-+ C
-+ C     DATA IMACH( 1) /          5 /
-+ C     DATA IMACH( 2) /          6 /
-+ C     DATA IMACH( 3) /          6 /
-+ C     DATA IMACH( 4) /          7 /
-+ C     DATA IMACH( 5) /         32 /
-+ C     DATA IMACH( 6) /          4 /
-+ C     DATA IMACH( 7) /          2 /
-+ C     DATA IMACH( 8) /         32 /
-+ C     DATA IMACH( 9) / 2147483647 /
-+ C     DATA IMACH(10) /          2 /
-+ C     DATA IMACH(11) /         24 /
-+ C     DATA IMACH(12) /       -126 /
-+ C     DATA IMACH(13) /        127 /
-+ C     DATA IMACH(14) /         53 /
-+ C     DATA IMACH(15) /      -1015 /
-+ C     DATA IMACH(16) /       1017 /
-+ C
-+ C     MACHINE CONSTANTS FOR THE IBM 360/370 SERIES,
-+ C     THE XEROX SIGMA 5/7/9, THE SEL SYSTEMS 85/86, AND
-+ C     THE PERKIN ELMER (INTERDATA) 7/32.
-+ C
-+ C     DATA IMACH( 1) /          5 /
-+ C     DATA IMACH( 2) /          6 /
-+ C     DATA IMACH( 3) /          7 /
-+ C     DATA IMACH( 4) /          6 /
-+ C     DATA IMACH( 5) /         32 /
-+ C     DATA IMACH( 6) /          4 /
-+ C     DATA IMACH( 7) /          2 /
-+ C     DATA IMACH( 8) /         31 /
-+ C     DATA IMACH( 9) /  Z7FFFFFFF /
-+ C     DATA IMACH(10) /         16 /
-+ C     DATA IMACH(11) /          6 /
-+ C     DATA IMACH(12) /        -64 /
-+ C     DATA IMACH(13) /         63 /
-+ C     DATA IMACH(14) /         14 /
-+ C     DATA IMACH(15) /        -64 /
-+ C     DATA IMACH(16) /         63 /
-+ C
-+ C     MACHINE CONSTANTS FOR THE IBM PC
-+ C
-+       DATA IMACH( 1) /          5 /
-+       DATA IMACH( 2) /          6 /
-+       DATA IMACH( 3) /          0 /
-+       DATA IMACH( 4) /          0 /
-+       DATA IMACH( 5) /         32 /
-+       DATA IMACH( 6) /          4 /
-+       DATA IMACH( 7) /          2 /
-+       DATA IMACH( 8) /         31 /
-+       DATA IMACH( 9) / 2147483647 /
-+       DATA IMACH(10) /          2 /
-+       DATA IMACH(11) /         24 /
-+       DATA IMACH(12) /       -125 /
-+       DATA IMACH(13) /        127 /
-+       DATA IMACH(14) /         53 /
-+       DATA IMACH(15) /      -1021 /
-+       DATA IMACH(16) /       1023 /
-+ C
-+ C     MACHINE CONSTANTS FOR THE IBM RS 6000
-+ C
-+ C     DATA IMACH( 1) /          5 /
-+ C     DATA IMACH( 2) /          6 /
-+ C     DATA IMACH( 3) /          6 /
-+ C     DATA IMACH( 4) /          0 /
-+ C     DATA IMACH( 5) /         32 /
-+ C     DATA IMACH( 6) /          4 /
-+ C     DATA IMACH( 7) /          2 /
-+ C     DATA IMACH( 8) /         31 /
-+ C     DATA IMACH( 9) / 2147483647 /
-+ C     DATA IMACH(10) /          2 /
-+ C     DATA IMACH(11) /         24 /
-+ C     DATA IMACH(12) /       -125 /
-+ C     DATA IMACH(13) /        128 /
-+ C     DATA IMACH(14) /         53 /
-+ C     DATA IMACH(15) /      -1021 /
-+ C     DATA IMACH(16) /       1024 /
-+ C
-+ C     MACHINE CONSTANTS FOR THE INTEL i860
-+ C
-+ C     DATA IMACH( 1) /          5 /
-+ C     DATA IMACH( 2) /          6 /
-+ C     DATA IMACH( 3) /          6 /
-+ C     DATA IMACH( 4) /          6 /
-+ C     DATA IMACH( 5) /         32 /
-+ C     DATA IMACH( 6) /          4 /
-+ C     DATA IMACH( 7) /          2 /
-+ C     DATA IMACH( 8) /         31 /
-+ C     DATA IMACH( 9) / 2147483647 /
-+ C     DATA IMACH(10) /          2 /
-+ C     DATA IMACH(11) /         24 /
-+ C     DATA IMACH(12) /       -125 /
-+ C     DATA IMACH(13) /        128 /
-+ C     DATA IMACH(14) /         53 /
-+ C     DATA IMACH(15) /      -1021 /
-+ C     DATA IMACH(16) /       1024 /
-+ C
-+ C     MACHINE CONSTANTS FOR THE PDP-10 (KA PROCESSOR)
-+ C
-+ C     DATA IMACH( 1) /          5 /
-+ C     DATA IMACH( 2) /          6 /
-+ C     DATA IMACH( 3) /          5 /
-+ C     DATA IMACH( 4) /          6 /
-+ C     DATA IMACH( 5) /         36 /
-+ C     DATA IMACH( 6) /          5 /
-+ C     DATA IMACH( 7) /          2 /
-+ C     DATA IMACH( 8) /         35 /
-+ C     DATA IMACH( 9) / "377777777777 /
-+ C     DATA IMACH(10) /          2 /
-+ C     DATA IMACH(11) /         27 /
-+ C     DATA IMACH(12) /       -128 /
-+ C     DATA IMACH(13) /        127 /
-+ C     DATA IMACH(14) /         54 /
-+ C     DATA IMACH(15) /       -101 /
-+ C     DATA IMACH(16) /        127 /
-+ C
-+ C     MACHINE CONSTANTS FOR THE PDP-10 (KI PROCESSOR)
-+ C
-+ C     DATA IMACH( 1) /          5 /
-+ C     DATA IMACH( 2) /          6 /
-+ C     DATA IMACH( 3) /          5 /
-+ C     DATA IMACH( 4) /          6 /
-+ C     DATA IMACH( 5) /         36 /
-+ C     DATA IMACH( 6) /          5 /
-+ C     DATA IMACH( 7) /          2 /
-+ C     DATA IMACH( 8) /         35 /
-+ C     DATA IMACH( 9) / "377777777777 /
-+ C     DATA IMACH(10) /          2 /
-+ C     DATA IMACH(11) /         27 /
-+ C     DATA IMACH(12) /       -128 /
-+ C     DATA IMACH(13) /        127 /
-+ C     DATA IMACH(14) /         62 /
-+ C     DATA IMACH(15) /       -128 /
-+ C     DATA IMACH(16) /        127 /
-+ C
-+ C     MACHINE CONSTANTS FOR PDP-11 FORTRAN SUPPORTING
-+ C     32-BIT INTEGER ARITHMETIC.
-+ C
-+ C     DATA IMACH( 1) /          5 /
-+ C     DATA IMACH( 2) /          6 /
-+ C     DATA IMACH( 3) /          5 /
-+ C     DATA IMACH( 4) /          6 /
-+ C     DATA IMACH( 5) /         32 /
-+ C     DATA IMACH( 6) /          4 /
-+ C     DATA IMACH( 7) /          2 /
-+ C     DATA IMACH( 8) /         31 /
-+ C     DATA IMACH( 9) / 2147483647 /
-+ C     DATA IMACH(10) /          2 /
-+ C     DATA IMACH(11) /         24 /
-+ C     DATA IMACH(12) /       -127 /
-+ C     DATA IMACH(13) /        127 /
-+ C     DATA IMACH(14) /         56 /
-+ C     DATA IMACH(15) /       -127 /
-+ C     DATA IMACH(16) /        127 /
-+ C
-+ C     MACHINE CONSTANTS FOR PDP-11 FORTRAN SUPPORTING
-+ C     16-BIT INTEGER ARITHMETIC.
-+ C
-+ C     DATA IMACH( 1) /          5 /
-+ C     DATA IMACH( 2) /          6 /
-+ C     DATA IMACH( 3) /          5 /
-+ C     DATA IMACH( 4) /          6 /
-+ C     DATA IMACH( 5) /         16 /
-+ C     DATA IMACH( 6) /          2 /
-+ C     DATA IMACH( 7) /          2 /
-+ C     DATA IMACH( 8) /         15 /
-+ C     DATA IMACH( 9) /      32767 /
-+ C     DATA IMACH(10) /          2 /
-+ C     DATA IMACH(11) /         24 /
-+ C     DATA IMACH(12) /       -127 /
-+ C     DATA IMACH(13) /        127 /
-+ C     DATA IMACH(14) /         56 /
-+ C     DATA IMACH(15) /       -127 /
-+ C     DATA IMACH(16) /        127 /
-+ C
-+ C     MACHINE CONSTANTS FOR THE SILICON GRAPHICS
-+ C
-+ C     DATA IMACH( 1) /          5 /
-+ C     DATA IMACH( 2) /          6 /
-+ C     DATA IMACH( 3) /          6 /
-+ C     DATA IMACH( 4) /          6 /
-+ C     DATA IMACH( 5) /         32 /
-+ C     DATA IMACH( 6) /          4 /
-+ C     DATA IMACH( 7) /          2 /
-+ C     DATA IMACH( 8) /         31 /
-+ C     DATA IMACH( 9) / 2147483647 /
-+ C     DATA IMACH(10) /          2 /
-+ C     DATA IMACH(11) /         24 /
-+ C     DATA IMACH(12) /       -125 /
-+ C     DATA IMACH(13) /        128 /
-+ C     DATA IMACH(14) /         53 /
-+ C     DATA IMACH(15) /      -1021 /
-+ C     DATA IMACH(16) /       1024 /
-+ C
-+ C     MACHINE CONSTANTS FOR THE SUN
-+ C
-+ C     DATA IMACH( 1) /          5 /
-+ C     DATA IMACH( 2) /          6 /
-+ C     DATA IMACH( 3) /          6 /
-+ C     DATA IMACH( 4) /          6 /
-+ C     DATA IMACH( 5) /         32 /
-+ C     DATA IMACH( 6) /          4 /
-+ C     DATA IMACH( 7) /          2 /
-+ C     DATA IMACH( 8) /         31 /
-+ C     DATA IMACH( 9) / 2147483647 /
-+ C     DATA IMACH(10) /          2 /
-+ C     DATA IMACH(11) /         24 /
-+ C     DATA IMACH(12) /       -125 /
-+ C     DATA IMACH(13) /        128 /
-+ C     DATA IMACH(14) /         53 /
-+ C     DATA IMACH(15) /      -1021 /
-+ C     DATA IMACH(16) /       1024 /
-+ C
-+ C     MACHINE CONSTANTS FOR THE SUN
-+ C     USING THE -r8 COMPILER OPTION
-+ C
-+ C     DATA IMACH( 1) /          5 /
-+ C     DATA IMACH( 2) /          6 /
-+ C     DATA IMACH( 3) /          6 /
-+ C     DATA IMACH( 4) /          6 /
-+ C     DATA IMACH( 5) /         32 /
-+ C     DATA IMACH( 6) /          4 /
-+ C     DATA IMACH( 7) /          2 /
-+ C     DATA IMACH( 8) /         31 /
-+ C     DATA IMACH( 9) / 2147483647 /
-+ C     DATA IMACH(10) /          2 /
-+ C     DATA IMACH(11) /         53 /
-+ C     DATA IMACH(12) /      -1021 /
-+ C     DATA IMACH(13) /       1024 /
-+ C     DATA IMACH(14) /        113 /
-+ C     DATA IMACH(15) /     -16381 /
-+ C     DATA IMACH(16) /      16384 /
-+ C
-+ C     MACHINE CONSTANTS FOR THE UNIVAC 1100 SERIES FTN COMPILER
-+ C
-+ C     DATA IMACH( 1) /          5 /
-+ C     DATA IMACH( 2) /          6 /
-+ C     DATA IMACH( 3) /          1 /
-+ C     DATA IMACH( 4) /          6 /
-+ C     DATA IMACH( 5) /         36 /
-+ C     DATA IMACH( 6) /          4 /
-+ C     DATA IMACH( 7) /          2 /
-+ C     DATA IMACH( 8) /         35 /
-+ C     DATA IMACH( 9) / O377777777777 /
-+ C     DATA IMACH(10) /          2 /
-+ C     DATA IMACH(11) /         27 /
-+ C     DATA IMACH(12) /       -128 /
-+ C     DATA IMACH(13) /        127 /
-+ C     DATA IMACH(14) /         60 /
-+ C     DATA IMACH(15) /      -1024 /
-+ C     DATA IMACH(16) /       1023 /
-+ C
-+ C     MACHINE CONSTANTS FOR THE Z80 MICROPROCESSOR
-+ C
-+ C     DATA IMACH( 1) /          1 /
-+ C     DATA IMACH( 2) /          1 /
-+ C     DATA IMACH( 3) /          0 /
-+ C     DATA IMACH( 4) /          1 /
-+ C     DATA IMACH( 5) /         16 /
-+ C     DATA IMACH( 6) /          2 /
-+ C     DATA IMACH( 7) /          2 /
-+ C     DATA IMACH( 8) /         15 /
-+ C     DATA IMACH( 9) /      32767 /
-+ C     DATA IMACH(10) /          2 /
-+ C     DATA IMACH(11) /         24 /
-+ C     DATA IMACH(12) /       -127 /
-+ C     DATA IMACH(13) /        127 /
-+ C     DATA IMACH(14) /         56 /
-+ C     DATA IMACH(15) /       -127 /
-+ C     DATA IMACH(16) /        127 /
-+ C
-+ C***FIRST EXECUTABLE STATEMENT  I1MACH
-+       IF (I .LT. 1  .OR.  I .GT. 16) GO TO 10
-+ C
-+       I1MACH = IMACH(I)
-+       RETURN
-+ C
-+    10 CONTINUE
-+       WRITE (UNIT = OUTPUT, FMT = 9000)
-+  9000 FORMAT ('1ERROR    1 IN I1MACH - I OUT OF BOUNDS')
-+ C
-+ C     CALL FDUMP
-+ C
-+       STOP
-+       END
-diff -crNb clean/makedoc.sed with_make/makedoc.sed
-*** clean/makedoc.sed	1970-01-01 09:00:00.000000000 +0900
---- with_make/makedoc.sed	2000-07-11 05:58:56.000000000 +0900
-***************
-*** 0 ****
---- 1,80 ----
-+ # By Giuseppe Borzi' - my first sed scriptfile
-+ # cancels lines after the proglogue
-+ 1,/END\ PROLOGUE/!d
-+ 1,/END\ PROLOGUE/{
-+ # defines and print the title
-+ /^\*DECK/{
-+ s/^\*DECK *\(.*\)/.TH \1 1/
-+ p
-+ s/.*/.SH SYNOPSIS/
-+ }
-+ s/^ *//
-+ # The hell !
-+ /^C\*\*\*BEGIN PROLOGUE/{
-+ # convert to lowercase for use in NAME
-+ y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/
-+ # append next line
-+ N
-+ s/^c\*\*\*begin prologue *\([a-z0-9]*\)\nC\*\*\*PURPOSE *\(.*\)/\1 \\- \2/
-+ t nosubsidiary
-+ s/\nC\*\*\*SUBSIDIARY//
-+ N
-+ s/^c\*\*\*begin prologue *\([a-z0-9]*\)\nC\*\*\*PURPOSE *\(.*\)/\1 \\- \2/
-+ :nosubsidiary
-+ h
-+ # print NAME heading
-+ s/.*/.SH NAME/
-+ p
-+ # retrieve original line from hold space and rewrite
-+ x
-+ }
-+ # cancels END PROLOGUE
-+ s/^C\*\*\*END PROLOGUE.*//
-+ # change each C*** to a roff section heading
-+ s/^C\*\*\*/.SH /
-+ # builds headings formed by two or more words
-+ /\.SH ROUTINES CALLED/{
-+ h
-+ s/\(\.SH ROUTINES CALLED\).*/\1/
-+ p
-+ x
-+ s/\.SH ROUTINES CALLED *\(.*\)/\1/
-+ }
-+ /\.SH REVISION HISTORY  (YYMMDD)/{
-+ h
-+ s/\(\.SH REVISION HISTORY  (YYMMDD)\).*/\1/
-+ p
-+ s/\(\.SH REVISION HISTORY  (YYMMDD)\).*/.PD 0/
-+ p
-+ x
-+ s/\.SH REVISION HISTORY  (YYMMDD) *\(.*\)/\1/
-+ }
-+ /\.SH COMMON BLOCKS/{
-+ h
-+ s/\(\.SH COMMON BLOCKS\).*/\1/
-+ p
-+ x
-+ s/\.SH COMMON BLOCKS *\(.*\)/\1/
-+ }
-+ /\.SH SEE ALSO/{
-+ h
-+ s/\(\.SH SEE ALSO\).*/\1/
-+ p
-+ x
-+ s/\.SH SEE ALSO *\(.*\)/\1/
-+ }
-+ # builds headings formed by one word
-+ /\.SH/{
-+ h
-+ s/\(\.SH *[A-Z]*\).*/\1/
-+ p
-+ x
-+ s/\.SH *[A-Z]* *\(.*\)/\1/
-+ }
-+ # strip initial C and eventually spaces
-+ s/^C  *//
-+ s/^C$//
-+ # this is Y2K compliant !
-+ /[0789][0-9][01][0-9][0-3][0-9]/i\
-+ .P
-+ }
-diff -crNb clean/makefile with_make/makefile
-*** clean/makefile	1970-01-01 09:00:00.000000000 +0900
---- with_make/makefile	2017-11-17 11:10:56.000000000 +0900
-***************
-*** 0 ****
---- 1,251 ----
-+ # MAN = \
-+ # aaaaaa.1 cnbdi.1  dcv.1    dqc25f.1 hpperm.1 qc25s.1      spoco.1 \
-+ # acosh.1  cnbfa.1  ddaini.1 dqc25s.1 hpsort.1 qcheb.1      spodi.1 \
-+ # ai.1     cnbfs.1  ddajac.1 dqcheb.1 hqr.1    qelg.1       spofa.1 \
-+ # aie.1    cnbir.1  ddanrm.1 dqdota.1 hqr2.1   qform.1      spofs.1 \
-+ # albeta.1 cnbsl.1  ddaslv.1 dqdoti.1 hstart.1 qk15.1       spoir.1 \
-+ # algams.1 combak.1 ddassl.1 dqelg.1  hstcrt.1 qk15i.1      spopt.1 \
-+ # ali.1    comhes.1 ddastp.1 dqform.1 hstcs1.1 qk15w.1      sposl.1 \
-+ # alngam.1 comlr.1  ddatrp.1 dqk15.1  hstcsp.1 qk21.1       sppco.1 \
-+ # alnrel.1 comlr2.1 ddaws.1  dqk15i.1 hstcyl.1 qk31.1       sppdi.1 \
-+ # asinh.1  compb.1  ddawts.1 dqk15w.1 hstplr.1 qk41.1       spperm.1 \
-+ # asyik.1  comqr.1  ddcor.1  dqk21.1  hstssp.1 qk51.1       sppfa.1 \
-+ # asyjy.1  comqr2.1 ddcst.1  dqk31.1  htrib3.1 qk61.1       sppsl.1 \
-+ # atanh.1  cortb.1  ddeabm.1 dqk41.1  htribk.1 qmomo.1      spsort.1 \
-+ # avint.1  corth.1  ddebdf.1 dqk51.1  htrid3.1 qnc79.1      sptsl.1 \
-+ # bakvec.1 cosdg.1  dderkf.1 dqk61.1  htridi.1 qng.1        sqrdc.1 \
-+ # balanc.1 cosgen.1 ddes.1   dqmomo.1 hvnrm.1  qpdoc.1      sqrsl.1 \
-+ # balbak.1 cosqb.1  ddntl.1  dqnc79.1 hw3crt.1 qpsrt.1      sreadp.1 \
-+ # bandr.1  cosqb1.1 ddntp.1  dqng.1   hwscrt.1 qrfac.1      srlcal.1 \
-+ # bandv.1  cosqf.1  ddoglg.1 dqpsrt.1 hwscs1.1 qrsolv.1     srot.1 \
-+ # bcrh.1   cosqf1.1 ddot.1   dqrdc.1  hwscsp.1 qs2i1d.1     srotg.1 \
-+ # bdiff.1  cosqi.1  ddpsc.1  dqrfac.1 hwscyl.1 qs2i1r.1     srotm.1 \
-+ # besi.1   cost.1   ddpst.1  dqrsl.1  hwsplr.1 qwgtc.1      srotmg.1 \
-+ # besi0.1  costi.1  ddriv1.1 dqrslv.1 hwsss1.1 qwgtf.1      ss2lt.1 \
-+ # besi0e.1 cot.1    ddriv2.1 dqwgtc.1 hwsssp.1 qwgts.1      ss2y.1 \
-+ # besi1.1  cpadd.1  ddriv3.1 dqwgtf.1 i1mach.1 qzhes.1      ssbmv.1 \
-+ # besi1e.1 cpbco.1  ddscl.1  dqwgts.1 i1merg.1 qzit.1       sscal.1 \
-+ # besj.1   cpbdi.1  ddstp.1  drc.1    icamax.1 qzval.1      ssd2s.1 \
-+ # besj0.1  cpbfa.1  ddzro.1  drc3jj.1 icopy.1  qzvec.1      ssdbcg.1 \
-+ # besj1.1  cpbsl.1  de1.1    drc3jm.1 idamax.1 r1mach.1     ssdcg.1 \
-+ # besk.1   cpevl.1  deabm.1  drc6j.1  idloc.1  r1mpyq.1     ssdcgn.1 \
-+ # besk0.1  cpevlr.1 debdf.1  drd.1    imtql1.1 r1updt.1     ssdcgs.1 \
-+ # besk0e.1 cpoco.1  defc.1   dreadp.1 imtql2.1 r9aimp.1     ssdgmr.1 \
-+ # besk1.1  cpodi.1  defcmn.1 dreort.1 imtqlv.1 r9atn1.1     ssdi.1 \
-+ # besk1e.1 cpofa.1  defe4.1  drf.1    indxa.1  r9chu.1      ssdomn.1 \
-+ # beskes.1 cpofs.1  defehl.1 drj.1    indxb.1  r9gmic.1     ssds.1 \
-+ # besknu.1 cpoir.1  defer.1  indxc.1  r9gmit.1     ssdscl.1 \
-+ # besks.1  cposl.1  dei.1    drkfs.1  initds.1 r9knus.1     ssgs.1 \
-+ # besy.1   cppco.1  denorm.1 drlcal.1 inits.1  r9lgic.1     ssiccg.1 \
-+ # besy0.1  cppdi.1  derf.1   drot.1   intrv.1  r9lgit.1     ssico.1 \
-+ # besy1.1  cppfa.1  derfc.1  drotg.1  intyd.1  r9lgmc.1     ssics.1 \
-+ # besynu.1 cppsl.1  derkf.1  drotm.1  invit.1  r9ln2r.1     ssidi.1 \
-+ # beta.1   cpqr79.1 derkfs.1 drotmg.1 inxca.1  r9pak.1      ssiev.1 \
-+ # betai.1  cproc.1  des.1    drsco.1  inxcb.1  r9upak.1     ssifa.1 \
-+ # bfqad.1  cprocp.1 ds2lt.1  inxcc.1  radb2.1      ssilur.1 \
-+ # bi.1     cprod.1  dexint.1 ds2y.1   iploc.1  radb3.1      ssilus.1 \
-+ # bie.1    cprodp.1 dexprl.1 dsbmv.1  ipperm.1 radb4.1      ssisl.1 \
-+ # binom.1  cpsi.1   dfac.1   dscal.1  ipsort.1 radb5.1      ssjac.1 \
-+ # bint4.1  cptsl.1  dfc.1    dsd2s.1  isamax.1 radbg.1      ssli.1 \
-+ # bintk.1  cpzero.1 dfcmn.1  dsdbcg.1 isdbcg.1 radf2.1      ssli2.1 \
-+ # bisect.1 cqrdc.1  dfdjc1.1 dsdcg.1  isdcg.1  radf3.1      ssllti.1 \
-+ # bkias.1  cqrsl.1  dfdjc3.1 dsdcgn.1 isdcgn.1 radf4.1      sslubc.1 \
-+ # bkisr.1  crati.1  dfehl.1  dsdcgs.1 isdcgs.1 radf5.1      sslucn.1 \
-+ # bksol.1  crotg.1  dfspvd.1 dsdgmr.1 isdgmr.1 radfg.1      sslucs.1 \
-+ # blktr1.1 cs1s2.1  dfspvn.1 dsdi.1   isdir.1  rand.1       sslugm.1 \
-+ # blktri.1 cscal.1  dfulmt.1 dsdomn.1 isdomn.1 ratqr.1      sslui.1 \
-+ # bndacc.1 cscale.1 dfzero.1 dsdot.1  isort.1  rc.1         sslui2.1 \
-+ # bndsol.1 cseri.1  dgami.1  dsds.1   issbcg.1 rc3jj.1      sslui4.1 \
-+ # bnfac.1  csevl.1  dgamic.1 dsdscl.1 isscg.1  rc3jm.1      ssluom.1 \
-+ # bnslv.1  cshch.1  dgamit.1 dsgs.1   isscgn.1 rc6j.1       ssluti.1 \
-+ # bqr.1    csico.1  dgamlm.1 dsiccg.1 isscgs.1 rd.1         ssmmi2.1 \
-+ # bsgq8.1  csidi.1  dgamln.1 dsico.1  issgmr.1 rebak.1      ssmmti.1 \
-+ # bskin.1  csifa.1  dgamma.1 dsics.1  issir.1  rebakb.1     ssmtv.1 \
-+ # bspdoc.1 csinh.1  dgamr.1  dsidi.1  issomn.1 reduc.1      ssmv.1 \
-+ # bspdr.1  csisl.1  dgamrn.1 dsifa.1  iswap.1  reduc2.1     ssort.1 \
-+ # bspev.1  cspco.1  dgaus8.1 dsilur.1 ivout.1  reort.1      sspco.1 \
-+ # bsplvd.1 cspdi.1  dgbco.1  dsilus.1 j4save.1 rf.1         sspdi.1 \
-+ # bsplvn.1 cspfa.1  dgbdi.1  dsindg.1 jairy.1  rfftb.1      sspev.1 \
-+ # bsppp.1  cspsl.1  dgbfa.1  dsisl.1  la05ad.1 rfftb1.1     sspfa.1 \
-+ # bspvd.1  csroot.1 dgbmv.1  dsjac.1  la05as.1 rfftf.1      sspmv.1 \
-+ # bspvn.1  csrot.1  dgbsl.1  dsli.1   la05bd.1 rfftf1.1     sspr.1 \
-+ # bsqad.1  csscal.1 dgeco.1  dsli2.1  la05bs.1 rffti.1      sspr2.1 \
-+ # bsrh.1   csvdc.1  dgedi.1  dsllti.1 la05cd.1 rffti1.1     sspsl.1 \
-+ # bvalu.1  cswap.1  dgefa.1  dslubc.1 la05cs.1 rg.1         ssvdc.1 \
-+ # csymm.1  dgefs.1  dslucn.1 la05ed.1 rgauss.1     sswap.1 \
-+ # csyr2k.1 dgemm.1  dslucs.1 la05es.1 rgg.1        ssymm.1 \
-+ # csyrk.1  dgemv.1  dslugm.1 llsia.1  rj.1         ssymv.1 \
-+ # c0lgmc.1 ctan.1   dger.1   dslui.1  lmpar.1  ssyr.1 \
-+ # c1merg.1 ctanh.1  dgesl.1  dslui2.1 lpdp.1   rpqr79.1     ssyr2.1 \
-+ # c9lgmc.1 ctbmv.1  dglss.1  dslui4.1 lsame.1  rpzero.1     ssyr2k.1 \
-+ # c9ln2r.1 ctbsv.1  dgmres.1 dsluom.1 lsei.1   rs.1         ssyrk.1 \
-+ # cacai.1  ctpmv.1  dgtsl.1  dsluti.1 lsi.1    rsb.1        stbmv.1 \
-+ # cacon.1  ctpsv.1  dh12.1   dslvs.1  lsod.1   rsco.1       stbsv.1 \
-+ # cacos.1  ctrco.1  dhels.1  dsmmi2.1 lssods.1 rsg.1        steps.1 \
-+ # cacosh.1 ctrdi.1  dheqr.1  dsmmti.1 lssuds.1 rsgab.1      stin.1 \
-+ # cairy.1  ctrmm.1  dhfti.1  dsmtv.1  macon.1  rsgba.1      stod.1 \
-+ # carg.1   ctrmv.1  dhkseq.1 dsmv.1   rsp.1        stor1.1 \
-+ # casin.1  ctrsl.1  dhstrt.1 dsort.1  mc20ad.1 rst.1        stout.1 \
-+ # casinh.1 ctrsm.1  dhvnrm.1 dsos.1   mc20as.1 rt.1         stpmv.1 \
-+ # casyi.1  ctrsv.1  dintp.1  dsoseq.1 mgsbv.1  runif.1      stpsv.1 \
-+ # catan.1  cuchk.1  dintrv.1 dsossl.1 minfit.1 rwupdt.1     strco.1 \
-+ # catan2.1 cunhj.1  dintyd.1 dspco.1  minso4.1 s1merg.1     strdi.1 \
-+ # catanh.1 cuni1.1  dir.1    dspdi.1  minsol.1 sasum.1      strmm.1 \
-+ # caxpy.1  cuni2.1  djairy.1 dspenc.1 mpadd.1  saxpy.1      strmv.1 \
-+ # cbabk2.1 cunik.1  dlbeta.1 dspfa.1  mpadd2.1 sbcg.1       strsl.1 \
-+ # cbal.1   cunk1.1  dlgams.1 dsplp.1  mpadd3.1 sbhin.1      strsm.1 \
-+ # cbesh.1  cunk2.1  dli.1    dspmv.1  mpblas.1 sbocls.1     strsv.1 \
-+ # cbesi.1  cuoik.1  dllsia.1 dspr.1   mpcdm.1  sbols.1      stway.1 \
-+ # cbesj.1  cv.1     dllti2.1 dspr2.1  mpchk.1  sbolsm.1     suds.1 \
-+ # cbesk.1  cwrsk.1  dlngam.1 dspsl.1  mpcmd.1  scasum.1     svco.1 \
-+ # cbesy.1  d1mach.1 dlnrel.1 dsteps.1 mpdivi.1 scg.1        svd.1 \
-+ # cbeta.1  d1merg.1 dlpdoc.1 dstod.1  mperr.1  scgn.1       svecs.1 \
-+ # cbinu.1  d1mpyq.1 dlpdp.1  dstor1.1 mpmaxr.1 scgs.1       svout.1 \
-+ # cbiry.1  d1updt.1 dlsei.1  dstway.1 mpmlp.1  schdc.1      swritp.1 \
-+ # cbknu.1  d9aimp.1 dlsi.1   dsuds.1  mpmul.1  schdd.1      sxlcal.1 \
-+ # cblkt1.1 d9atn1.1 dlsod.1  dsvco.1  mpmul2.1 schex.1      tevlc.1 \
-+ # cblktr.1 d9b0mp.1 dlssud.1 dsvdc.1  mpmuli.1 schkw.1      tevls.1 \
-+ # cbrt.1   d9b1mp.1 dmacon.1 dswap.1  mpnzr.1  schud.1      tinvit.1 \
-+ # cbuni.1  d9chu.1  dmgsbv.1 dsymm.1  mpovfl.1 sclosm.1     tql1.1 \
-+ # cbunk.1  d9gmic.1 dmout.1  dsymv.1  mpstr.1  scnrm2.1     tql2.1 \
-+ # ccbrt.1  d9gmit.1 dmpar.1  dsyr.1   mpunfl.1 scoef.1      tqlrat.1 \
-+ # cchdc.1  d9knus.1 dnbco.1  dsyr2.1  numxer.1 scopy.1      trbak1.1 \
-+ # cchdd.1  d9lgic.1 dnbdi.1  dsyr2k.1 ohtrol.1 scopym.1     trbak3.1 \
-+ # cchex.1  d9lgit.1 dnbfa.1  dsyrk.1  ohtror.1 scov.1       tred1.1 \
-+ # cchud.1  d9lgmc.1 dnbfs.1  dtbmv.1  ortbak.1 scpplt.1     tred2.1 \
-+ # ccmpb.1  d9ln2r.1 dnbsl.1  dtbsv.1  orthes.1 sdaini.1     tred3.1 \
-+ # ccopy.1  d9pak.1  dnls1.1  dtin.1   ortho4.1 sdajac.1     tri3.1 \
-+ # ccosh.1  d9upak.1 dnls1e.1 dtout.1  orthog.1 sdanrm.1     tridib.1 \
-+ # ccot.1   dacosh.1 dnrm2.1  dtpmv.1  orthol.1 sdaslv.1     tridq.1 \
-+ # cdcdot.1 dai.1    dnsq.1   dtpsv.1  orthor.1 sdassl.1     tris4.1 \
-+ # cdcor.1  daie.1   dnsqe.1  dtrco.1  ortran.1 sdastp.1     trisp.1 \
-+ # cdcst.1  dasinh.1 dogleg.1 dtrdi.1  passb.1  sdatrp.1     trix.1 \
-+ # cdiv.1   dasum.1  dohtrl.1 dtrmm.1  passb2.1 sdawts.1     tsturm.1 \
-+ # cdntl.1  dasyik.1 domn.1   dtrmv.1  passb3.1 sdcor.1      u11ls.1 \
-+ # cdntp.1  dasyjy.1 dorth.1  dtrsl.1  passb4.1 sdcst.1      u11us.1 \
-+ # cdotc.1  datanh.1 dorthr.1 dtrsm.1  passb5.1 sdntl.1      u12ls.1 \
-+ # cdotu.1  davint.1 dp1vlu.1 dtrsv.1  passf.1  sdntp.1      u12us.1 \
-+ # cdpsc.1  daws.1   dpbco.1  du11ls.1 passf2.1 sdot.1       ulsia.1 \
-+ # cdpst.1  daxpy.1  dpbdi.1  du11us.1 passf3.1 sdpsc.1      usrmat.1 \
-+ # cdriv1.1 dbcg.1   dpbfa.1  du12ls.1 passf4.1 sdpst.1      vnwrms.1 \
-+ # cdriv2.1 dbdiff.1 dpbsl.1  du12us.1 passf5.1 sdriv1.1     wnlit.1 \
-+ # cdriv3.1 dbesi.1  dpchbs.1 dulsia.1 pchbs.1  sdriv2.1     wnlsm.1 \
-+ # cdscl.1  dbesi0.1 dpchce.1 dusrmt.1 pchce.1  sdriv3.1     wnlt1.1 \
-+ # cdstp.1  dbesi1.1 dpchci.1 dvecs.1  pchci.1  sdscl.1      wnlt2.1 \
-+ # cdzro.1  dbesj.1  dpchcm.1 dvnrms.1 pchcm.1  sdsdot.1     wnlt3.1 \
-+ # cexprl.1 dbesj0.1 dpchcs.1 dvout.1  pchcs.1  sdstp.1      wnnls.1 \
-+ # cfftb.1  dbesj1.1 dpchdf.1 dwnlit.1 pchdf.1  sdzro.1      xadd.1 \
-+ # cfftb1.1 dbesk.1  dpchfd.1 dwnlsm.1 pchdoc.1 sepeli.1     xadj.1 \
-+ # cfftf.1  dbesk0.1 dpchfe.1 dwnlt1.1 pchfd.1  sepx4.1      xc210.1 \
-+ # cfftf1.1 dbesk1.1 dpchia.1 dwnlt2.1 pchfe.1  sgbco.1      xcon.1 \
-+ # cffti.1  dbesks.1 dpchic.1 dwnlt3.1 pchia.1  sgbdi.1      xerbla.1 \
-+ # cffti1.1 dbesy.1  dpchid.1 dwnnls.1 pchic.1  sgbfa.1      xerclr.1 \
-+ # cfod.1   dbesy0.1 dpchim.1 dwritp.1 pchid.1  sgbmv.1      xercnt.1 \
-+ # cg.1     dbesy1.1 dpchkt.1 dwupdt.1 pchim.1  sgbsl.1      xerdmp.1 \
-+ # cgamma.1 dbeta.1  dpchng.1 dx.1     pchkt.1  sgeco.1      xerhlt.1 \
-+ # cgamr.1  dbetai.1 dpchsp.1 dx4.1    pchngs.1 sgedi.1      xermax.1 \
-+ # cgbco.1  dbfqad.1 dpchst.1 dxadd.1  pchsp.1  sgeev.1      xermsg.1 \
-+ # cgbdi.1  dbhin.1  dpchsw.1 dxadj.1  pchst.1  sgefa.1      xerprn.1 \
-+ # cgbfa.1  dbi.1    dpcoef.1 dxc210.1 pchsw.1  sgefs.1      xersve.1 \
-+ # cgbmv.1  dbie.1   dpfqad.1 dxcon.1  pcoef.1  sgeir.1      xgetf.1 \
-+ # cgbsl.1  dbinom.1 dpigmr.1 dxlcal.1 pfqad.1  sgemm.1      xgetua.1 \
-+ # cgeco.1  dbint4.1 dpincw.1 dxlegf.1 pgsf.1   sgemv.1      xgetun.1 \
-+ # cgedi.1  dbintk.1 dpinit.1 dxnrmp.1 pimach.1 sger.1       xlegf.1 \
-+ # cgeev.1  dbkias.1 dpintm.1 dxpmu.1  pinitm.1 sgesl.1      xnrmp.1 \
-+ # cgefa.1  dbkisr.1 dpjac.1  dxpmup.1 pjac.1   sglss.1      xpmu.1 \
-+ # cgefs.1  dbksol.1 dplint.1 dxpnrm.1 pnnzrs.1 sgmres.1     xpmup.1 \
-+ # cgeir.1  dbndac.1 dplpce.1 dxpqnu.1 poch.1   sgtsl.1      xpnrm.1 \
-+ # cgemm.1  dbndsl.1 dplpdm.1 dxpsi.1  poch1.1  shels.1      xpqnu.1 \
-+ # cgemv.1  dbnfac.1 dplpfe.1 dxqmu.1  pois3d.1 sheqr.1      xpsi.1 \
-+ # cgerc.1  dbnslv.1 dplpfl.1 dxqnu.1  poisd2.1 sindg.1      xqmu.1 \
-+ # cgeru.1  dbocls.1 dplpmn.1 dxred.1  poisn2.1 sinqb.1      xqnu.1 \
-+ # cgesl.1  dbols.1  dplpmu.1 dxset.1  poisp2.1 sinqf.1      xred.1 \
-+ # cgtsl.1  dbolsm.1 dplpup.1 dy.1     poistg.1 sinqi.1      xset.1 \
-+ # ch.1     dbsgq8.1 dpnnzr.1 dy4.1    polcof.1 sint.1       xsetf.1 \
-+ # chbmv.1  dbsi0e.1 dpoch.1  dyairy.1 polfit.1 sinti.1      xsetua.1 \
-+ # chemm.1  dbsi1e.1 dpoch1.1 e1.1     polint.1 sintrp.1     xsetun.1 \
-+ # chemv.1  dbsk0e.1 dpoco.1  efc.1    polyvl.1 sir.1        yairy.1 \
-+ # cher.1   dbsk1e.1 dpodi.1  efcmn.1  pos3d1.1 zabs.1 \
-+ # cher2.1  dbskes.1 dpofa.1  ei.1     postg2.1 sllti2.1     zacai.1 \
-+ # cher2k.1 dbskin.1 dpofs.1  eisdoc.1 ppadd.1  slpdoc.1     zacon.1 \
-+ # cherk.1  dbsknu.1 dpolcf.1 elmbak.1 ppgq8.1  slvs.1       zairy.1 \
-+ # chfcm.1  dbspdr.1 dpolft.1 elmhes.1 ppgsf.1  smout.1      zasyi.1 \
-+ # chfdv.1  dbspev.1 dpolvl.1 eltran.1 pppsf.1  snbco.1      zbesh.1 \
-+ # chfev.1  dbsppp.1 dpopt.1  enorm.1  ppqad.1  snbdi.1      zbesi.1 \
-+ # chfie.1  dbspvd.1 dposl.1  erf.1    ppsgf.1  snbfa.1      zbesj.1 \
-+ # chico.1  dbspvn.1 dppco.1  erfc.1   ppspf.1  snbfs.1      zbesk.1 \
-+ # chidi.1  dbsqad.1 dppdi.1  ppval.1  snbir.1      zbesy.1 \
-+ # chiev.1  dbsynu.1 dpperm.1 exint.1  proc.1   snbsl.1      zbinu.1 \
-+ # chifa.1  dbvalu.1 dppfa.1  exprel.1 procp.1  snls1.1      zbiry.1 \
-+ # chisl.1  dppgq8.1 ezfft1.1 prod.1   snls1e.1     zbknu.1 \
-+ # chkder.1 dppqad.1 ezfftb.1 prodp.1  snrm2.1      zbuni.1 \
-+ # chkpr4.1 dppsl.1  ezfftf.1 prvec.1  snsq.1       zbunk.1 \
-+ # chkprm.1 dcbrt.1  dppval.1 ezffti.1 prwpge.1 snsqe.1      zdiv.1 \
-+ # chksn4.1 dcdot.1  dprvec.1 fac.1    prwvir.1 sods.1       zexp.1 \
-+ # chksng.1 dcfod.1  dprwpg.1 fc.1     psgf.1   somn.1       zkscl.1 \
-+ # chpco.1  dcg.1    dprwvr.1 fcmn.1   psi.1    sopenm.1     zlog.1 \
-+ # chpdi.1  dcgn.1   dpsi.1   fdjac1.1 psifn.1  sorth.1      zmlri.1 \
-+ # chpfa.1  dcgs.1   dpsifn.1 fdjac3.1 psixn.1  sos.1        zmlt.1 \
-+ # chpmv.1  dchdc.1  dpsixn.1 fdump.1  pvalue.1 soseqs.1     zrati.1 \
-+ # chpr.1   dchdd.1  dpsort.1 fftdoc.1 pythag.1 sossol.1     zs1s2.1 \
-+ # chpr2.1  dchex.1  dptsl.1  figi.1   qag.1    spbco.1      zseri.1 \
-+ # chpsl.1  dchfcm.1 dqag.1   figi2.1  qage.1   spbdi.1      zshch.1 \
-+ # chu.1    dchfdv.1 dqage.1  fulmat.1 qagi.1   spbfa.1      zsqrt.1 \
-+ # cinvit.1 dchfev.1 dqagi.1  fundoc.1 qagie.1  spbsl.1      zuchk.1 \
-+ # ckscl.1  dchfie.1 dqagie.1 fzero.1  qagp.1   speli4.1     zunhj.1 \
-+ # clbeta.1 dchkw.1  dqagp.1  gami.1   qagpe.1  spelip.1     zuni1.1 \
-+ # clngam.1 dchu.1   dqagpe.1 gamic.1  qags.1   spenc.1      zuni2.1 \
-+ # clnrel.1 dchud.1  dqags.1  gamit.1  qagse.1  spigmr.1     zunik.1 \
-+ # clog10.1 dckder.1 dqagse.1 gamlim.1 qawc.1   spincw.1     zunk1.1 \
-+ # cmgnbn.1 dcoef.1  dqawc.1  gamln.1  qawce.1  spinit.1     zunk2.1 \
-+ # cmlri.1  dcopy.1  dqawce.1 gamma.1  qawf.1   splp.1       zuoik.1 \
-+ # cmpcsg.1 dcopym.1 dqawf.1  gamr.1   qawfe.1  splpce.1     zwrsk.1 \
-+ # cmposd.1 dcosdg.1 dqawfe.1 gamrn.1  qawo.1   splpdm.1 \
-+ # cmposn.1 dcot.1   dqawo.1  gaus8.1  qawoe.1  splpfe.1 \
-+ # cmposp.1 dcov.1   dqawoe.1 genbun.1 qaws.1   splpfl.1 \
-+ # cmptr3.1 dcpplt.1 dqaws.1  h12.1    qawse.1  splpmn.1 \
-+ # cmptrx.1 dcscal.1 dqawse.1 hfti.1   qc25c.1  splpmu.1 \
-+ # cnbco.1  dcsevl.1 dqc25c.1 hkseq.1  qc25f.1  splpup.1
-+ 
-+ MAN = \
-+ aaaaaa.1 
-+ 
-+ OBJ = $(addsuffix $(MAN:.1=.o), src/)
-+ 
-+ #
-+ #  Library targets and man pages.
-+ #
-+ 
-+ # all: libslatec.so #libslatec.a doc
-+ 
-+ # libslatec.a:
-+ # 	cd static; make
-+ 
-+ .PHONY: dynamic static
-+ 
-+ all: libslatec.so libslatec.a
-+ 
-+ dynamic: libslatec.so
-+ 
-+ static: libslatec.a
-+ 
-+ libslatec.so: $(OBJ)
-+ 	${CC} -shared -o $@ $(OBJ) 
-+ 
-+ libslatec.a:  $(OBJ)
-+ 	${AR} r $@ $(OBJ); ranlib $@
-+ 
-+ src/%.o: src/%.f
-+ 	${FC} -c $< -o $@
-+ 
-+ doc: $(MAN)
-+ 
-+ ${MAN}: %.1: %.f
-+ 	sed -f makedoc.sed $< > $@
-+ 
-+ install:
-+ 	mkdir lib;
-+ 	mv libslatec.a libslatec.so lib;
-+ 
-+ clean:
-+ 	rm -rf src/*.o src*.1 libslatec.a libslatec.so lib
-diff -crNb clean/r1mach.f with_make/r1mach.f
-*** clean/r1mach.f	1970-01-01 09:00:00.000000000 +0900
---- with_make/r1mach.f	1999-10-07 06:49:59.000000000 +0900
-***************
-*** 0 ****
---- 1,422 ----
-+ *DECK R1MACH
-+       REAL FUNCTION R1MACH (I)
-+ C***BEGIN PROLOGUE  R1MACH
-+ C***PURPOSE  Return floating point machine dependent constants.
-+ C***LIBRARY   SLATEC
-+ C***CATEGORY  R1
-+ C***TYPE      SINGLE PRECISION (R1MACH-S, D1MACH-D)
-+ C***KEYWORDS  MACHINE CONSTANTS
-+ C***AUTHOR  Fox, P. A., (Bell Labs)
-+ C           Hall, A. D., (Bell Labs)
-+ C           Schryer, N. L., (Bell Labs)
-+ C***DESCRIPTION
-+ C
-+ C   R1MACH can be used to obtain machine-dependent parameters for the
-+ C   local machine environment.  It is a function subprogram with one
-+ C   (input) argument, and can be referenced as follows:
-+ C
-+ C        A = R1MACH(I)
-+ C
-+ C   where I=1,...,5.  The (output) value of A above is determined by
-+ C   the (input) value of I.  The results for various values of I are
-+ C   discussed below.
-+ C
-+ C   R1MACH(1) = B**(EMIN-1), the smallest positive magnitude.
-+ C   R1MACH(2) = B**EMAX*(1 - B**(-T)), the largest magnitude.
-+ C   R1MACH(3) = B**(-T), the smallest relative spacing.
-+ C   R1MACH(4) = B**(1-T), the largest relative spacing.
-+ C   R1MACH(5) = LOG10(B)
-+ C
-+ C   Assume single precision numbers are represented in the T-digit,
-+ C   base-B form
-+ C
-+ C              sign (B**E)*( (X(1)/B) + ... + (X(T)/B**T) )
-+ C
-+ C   where 0 .LE. X(I) .LT. B for I=1,...,T, 0 .LT. X(1), and
-+ C   EMIN .LE. E .LE. EMAX.
-+ C
-+ C   The values of B, T, EMIN and EMAX are provided in I1MACH as
-+ C   follows:
-+ C   I1MACH(10) = B, the base.
-+ C   I1MACH(11) = T, the number of base-B digits.
-+ C   I1MACH(12) = EMIN, the smallest exponent E.
-+ C   I1MACH(13) = EMAX, the largest exponent E.
-+ C
-+ C   To alter this function for a particular environment, the desired
-+ C   set of DATA statements should be activated by removing the C from
-+ C   column 1.  Also, the values of R1MACH(1) - R1MACH(4) should be
-+ C   checked for consistency with the local operating system.
-+ C
-+ C***REFERENCES  P. A. Fox, A. D. Hall and N. L. Schryer, Framework for
-+ C                 a portable library, ACM Transactions on Mathematical
-+ C                 Software 4, 2 (June 1978), pp. 177-188.
-+ C***ROUTINES CALLED  XERMSG
-+ C***REVISION HISTORY  (YYMMDD)
-+ C   790101  DATE WRITTEN
-+ C   890213  REVISION DATE from Version 3.2
-+ C   891214  Prologue converted to Version 4.0 format.  (BAB)
-+ C   900315  CALLs to XERROR changed to CALLs to XERMSG.  (THJ)
-+ C   900618  Added DEC RISC constants.  (WRB)
-+ C   900723  Added IBM RS 6000 constants.  (WRB)
-+ C   910710  Added HP 730 constants.  (SMR)
-+ C   911114  Added Convex IEEE constants.  (WRB)
-+ C   920121  Added SUN -r8 compiler option constants.  (WRB)
-+ C   920229  Added Touchstone Delta i860 constants.  (WRB)
-+ C   920501  Reformatted the REFERENCES section.  (WRB)
-+ C   920625  Added CONVEX -p8 and -pd8 compiler option constants.
-+ C           (BKS, WRB)
-+ C   930201  Added DEC Alpha and SGI constants.  (RWC and WRB)
-+ C***END PROLOGUE  R1MACH
-+ C
-+ C
-+ 	external slamch
-+       REAL RMACH(5),slamch
-+ 	integer iflag
-+ 
-+       SAVE RMACH,iflag
-+ 	data iflag/0/
-+ C
-+ C
-+ C     MACHINE CONSTANTS FOR THE AMIGA
-+ C     ABSOFT FORTRAN COMPILER USING THE 68020/68881 COMPILER OPTION
-+ C
-+ C     DATA SMALL(1) / Z'00800000' /
-+ C     DATA LARGE(1) / Z'7F7FFFFF' /
-+ C     DATA RIGHT(1) / Z'33800000' /
-+ C     DATA DIVER(1) / Z'34000000' /
-+ C     DATA LOG10(1) / Z'3E9A209B' /
-+ C
-+ C     MACHINE CONSTANTS FOR THE AMIGA
-+ C     ABSOFT FORTRAN COMPILER USING SOFTWARE FLOATING POINT
-+ C
-+ C     DATA SMALL(1) / Z'00800000' /
-+ C     DATA LARGE(1) / Z'7EFFFFFF' /
-+ C     DATA RIGHT(1) / Z'33800000' /
-+ C     DATA DIVER(1) / Z'34000000' /
-+ C     DATA LOG10(1) / Z'3E9A209B' /
-+ C
-+ C     MACHINE CONSTANTS FOR THE APOLLO
-+ C
-+ C     DATA SMALL(1) / 16#00800000 /
-+ C     DATA LARGE(1) / 16#7FFFFFFF /
-+ C     DATA RIGHT(1) / 16#33800000 /
-+ C     DATA DIVER(1) / 16#34000000 /
-+ C     DATA LOG10(1) / 16#3E9A209B /
-+ C
-+ C     MACHINE CONSTANTS FOR THE BURROUGHS 1700 SYSTEM
-+ C
-+ C     DATA RMACH(1) / Z400800000 /
-+ C     DATA RMACH(2) / Z5FFFFFFFF /
-+ C     DATA RMACH(3) / Z4E9800000 /
-+ C     DATA RMACH(4) / Z4EA800000 /
-+ C     DATA RMACH(5) / Z500E730E8 /
-+ C
-+ C     MACHINE CONSTANTS FOR THE BURROUGHS 5700/6700/7700 SYSTEMS
-+ C
-+ C     DATA RMACH(1) / O1771000000000000 /
-+ C     DATA RMACH(2) / O0777777777777777 /
-+ C     DATA RMACH(3) / O1311000000000000 /
-+ C     DATA RMACH(4) / O1301000000000000 /
-+ C     DATA RMACH(5) / O1157163034761675 /
-+ C
-+ C     MACHINE CONSTANTS FOR THE CDC 170/180 SERIES USING NOS/VE
-+ C
-+ C     DATA RMACH(1) / Z"3001800000000000" /
-+ C     DATA RMACH(2) / Z"4FFEFFFFFFFFFFFE" /
-+ C     DATA RMACH(3) / Z"3FD2800000000000" /
-+ C     DATA RMACH(4) / Z"3FD3800000000000" /
-+ C     DATA RMACH(5) / Z"3FFF9A209A84FBCF" /
-+ C
-+ C     MACHINE CONSTANTS FOR THE CDC 6000/7000 SERIES
-+ C
-+ C     DATA RMACH(1) / 00564000000000000000B /
-+ C     DATA RMACH(2) / 37767777777777777776B /
-+ C     DATA RMACH(3) / 16414000000000000000B /
-+ C     DATA RMACH(4) / 16424000000000000000B /
-+ C     DATA RMACH(5) / 17164642023241175720B /
-+ C
-+ C     MACHINE CONSTANTS FOR THE CELERITY C1260
-+ C
-+ C     DATA SMALL(1) / Z'00800000' /
-+ C     DATA LARGE(1) / Z'7F7FFFFF' /
-+ C     DATA RIGHT(1) / Z'33800000' /
-+ C     DATA DIVER(1) / Z'34000000' /
-+ C     DATA LOG10(1) / Z'3E9A209B' /
-+ C
-+ C     MACHINE CONSTANTS FOR THE CONVEX
-+ C     USING THE -fn COMPILER OPTION
-+ C
-+ C     DATA RMACH(1) / Z'00800000' /
-+ C     DATA RMACH(2) / Z'7FFFFFFF' /
-+ C     DATA RMACH(3) / Z'34800000' /
-+ C     DATA RMACH(4) / Z'35000000' /
-+ C     DATA RMACH(5) / Z'3F9A209B' /
-+ C
-+ C     MACHINE CONSTANTS FOR THE CONVEX
-+ C     USING THE -fi COMPILER OPTION
-+ C
-+ C     DATA RMACH(1) / Z'00800000' /
-+ C     DATA RMACH(2) / Z'7F7FFFFF' /
-+ C     DATA RMACH(3) / Z'33800000' /
-+ C     DATA RMACH(4) / Z'34000000' /
-+ C     DATA RMACH(5) / Z'3E9A209B' /
-+ C
-+ C     MACHINE CONSTANTS FOR THE CONVEX
-+ C     USING THE -p8 OR -pd8 COMPILER OPTION
-+ C
-+ C     DATA RMACH(1) / Z'0010000000000000' /
-+ C     DATA RMACH(2) / Z'7FFFFFFFFFFFFFFF' /
-+ C     DATA RMACH(3) / Z'3CC0000000000000' /
-+ C     DATA RMACH(4) / Z'3CD0000000000000' /
-+ C     DATA RMACH(5) / Z'3FF34413509F79FF' /
-+ C
-+ C     MACHINE CONSTANTS FOR THE CRAY
-+ C
-+ C     DATA RMACH(1) / 200034000000000000000B /
-+ C     DATA RMACH(2) / 577767777777777777776B /
-+ C     DATA RMACH(3) / 377224000000000000000B /
-+ C     DATA RMACH(4) / 377234000000000000000B /
-+ C     DATA RMACH(5) / 377774642023241175720B /
-+ C
-+ C     MACHINE CONSTANTS FOR THE DATA GENERAL ECLIPSE S/200
-+ C     NOTE - IT MAY BE APPROPRIATE TO INCLUDE THE FOLLOWING CARD -
-+ C     STATIC RMACH(5)
-+ C
-+ C     DATA SMALL /    20K,       0 /
-+ C     DATA LARGE / 77777K, 177777K /
-+ C     DATA RIGHT / 35420K,       0 /
-+ C     DATA DIVER / 36020K,       0 /
-+ C     DATA LOG10 / 40423K,  42023K /
-+ C
-+ C     MACHINE CONSTANTS FOR THE DEC ALPHA
-+ C     USING G_FLOAT
-+ C
-+ C     DATA RMACH(1) / '00000080'X /
-+ C     DATA RMACH(2) / 'FFFF7FFF'X /
-+ C     DATA RMACH(3) / '00003480'X /
-+ C     DATA RMACH(4) / '00003500'X /
-+ C     DATA RMACH(5) / '209B3F9A'X /
-+ C
-+ C     MACHINE CONSTANTS FOR THE DEC ALPHA
-+ C     USING IEEE_FLOAT
-+ C
-+ C     DATA RMACH(1) / '00800000'X /
-+ C     DATA RMACH(2) / '7F7FFFFF'X /
-+ C     DATA RMACH(3) / '33800000'X /
-+ C     DATA RMACH(4) / '34000000'X /
-+ C     DATA RMACH(5) / '3E9A209B'X /
-+ C
-+ C     MACHINE CONSTANTS FOR THE DEC RISC
-+ C
-+ C     DATA RMACH(1) / Z'00800000' /
-+ C     DATA RMACH(2) / Z'7F7FFFFF' /
-+ C     DATA RMACH(3) / Z'33800000' /
-+ C     DATA RMACH(4) / Z'34000000' /
-+ C     DATA RMACH(5) / Z'3E9A209B' /
-+ C
-+ C     MACHINE CONSTANTS FOR THE DEC VAX
-+ C     (EXPRESSED IN INTEGER AND HEXADECIMAL)
-+ C     THE HEX FORMAT BELOW MAY NOT BE SUITABLE FOR UNIX SYSTEMS
-+ C     THE INTEGER FORMAT SHOULD BE OK FOR UNIX SYSTEMS
-+ C
-+ C     DATA SMALL(1) /       128 /
-+ C     DATA LARGE(1) /    -32769 /
-+ C     DATA RIGHT(1) /     13440 /
-+ C     DATA DIVER(1) /     13568 /
-+ C     DATA LOG10(1) / 547045274 /
-+ C
-+ C     DATA SMALL(1) / Z00000080 /
-+ C     DATA LARGE(1) / ZFFFF7FFF /
-+ C     DATA RIGHT(1) / Z00003480 /
-+ C     DATA DIVER(1) / Z00003500 /
-+ C     DATA LOG10(1) / Z209B3F9A /
-+ C
-+ C     MACHINE CONSTANTS FOR THE ELXSI 6400
-+ C     (ASSUMING REAL*4 IS THE DEFAULT REAL)
-+ C
-+ C     DATA SMALL(1) / '00800000'X /
-+ C     DATA LARGE(1) / '7F7FFFFF'X /
-+ C     DATA RIGHT(1) / '33800000'X /
-+ C     DATA DIVER(1) / '34000000'X /
-+ C     DATA LOG10(1) / '3E9A209B'X /
-+ C
-+ C     MACHINE CONSTANTS FOR THE HARRIS 220
-+ C
-+ C     DATA SMALL(1), SMALL(2) / '20000000, '00000201 /
-+ C     DATA LARGE(1), LARGE(2) / '37777777, '00000177 /
-+ C     DATA RIGHT(1), RIGHT(2) / '20000000, '00000352 /
-+ C     DATA DIVER(1), DIVER(2) / '20000000, '00000353 /
-+ C     DATA LOG10(1), LOG10(2) / '23210115, '00000377 /
-+ C
-+ C     MACHINE CONSTANTS FOR THE HONEYWELL 600/6000 SERIES
-+ C
-+ C     DATA RMACH(1) / O402400000000 /
-+ C     DATA RMACH(2) / O376777777777 /
-+ C     DATA RMACH(3) / O714400000000 /
-+ C     DATA RMACH(4) / O716400000000 /
-+ C     DATA RMACH(5) / O776464202324 /
-+ C
-+ C     MACHINE CONSTANTS FOR THE HP 730
-+ C
-+ C     DATA RMACH(1) / Z'00800000' /
-+ C     DATA RMACH(2) / Z'7F7FFFFF' /
-+ C     DATA RMACH(3) / Z'33800000' /
-+ C     DATA RMACH(4) / Z'34000000' /
-+ C     DATA RMACH(5) / Z'3E9A209B' /
-+ C
-+ C     MACHINE CONSTANTS FOR THE HP 2100
-+ C     3 WORD DOUBLE PRECISION WITH FTN4
-+ C
-+ C     DATA SMALL(1), SMALL(2) / 40000B,       1 /
-+ C     DATA LARGE(1), LARGE(2) / 77777B, 177776B /
-+ C     DATA RIGHT(1), RIGHT(2) / 40000B,    325B /
-+ C     DATA DIVER(1), DIVER(2) / 40000B,    327B /
-+ C     DATA LOG10(1), LOG10(2) / 46420B,  46777B /
-+ C
-+ C     MACHINE CONSTANTS FOR THE HP 2100
-+ C     4 WORD DOUBLE PRECISION WITH FTN4
-+ C
-+ C     DATA SMALL(1), SMALL(2) / 40000B,       1 /
-+ C     DATA LARGE(1), LARGE(2) / 77777B, 177776B /
-+ C     DATA RIGHT(1), RIGHT(2) / 40000B,    325B /
-+ C     DATA DIVER(1), DIVER(2) / 40000B,    327B /
-+ C     DATA LOG10(1), LOG10(2) / 46420B,  46777B /
-+ C
-+ C     MACHINE CONSTANTS FOR THE HP 9000
-+ C
-+ C     DATA SMALL(1) / 00004000000B /
-+ C     DATA LARGE(1) / 17677777777B /
-+ C     DATA RIGHT(1) / 06340000000B /
-+ C     DATA DIVER(1) / 06400000000B /
-+ C     DATA LOG10(1) / 07646420233B /
-+ C
-+ C     MACHINE CONSTANTS FOR THE IBM 360/370 SERIES,
-+ C     THE XEROX SIGMA 5/7/9, THE SEL SYSTEMS 85/86  AND
-+ C     THE PERKIN ELMER (INTERDATA) 7/32.
-+ C
-+ C     DATA RMACH(1) / Z00100000 /
-+ C     DATA RMACH(2) / Z7FFFFFFF /
-+ C     DATA RMACH(3) / Z3B100000 /
-+ C     DATA RMACH(4) / Z3C100000 /
-+ C     DATA RMACH(5) / Z41134413 /
-+ C
-+ C     MACHINE CONSTANTS FOR THE IBM PC
-+ C
-+ C     DATA SMALL(1) / 1.18E-38      /
-+ C     DATA LARGE(1) / 3.40E+38      /
-+ C     DATA RIGHT(1) / 0.595E-07     /
-+ C     DATA DIVER(1) / 1.19E-07      /
-+ C     DATA LOG10(1) / 0.30102999566 /
-+ C
-+ C     MACHINE CONSTANTS FOR THE IBM RS 6000
-+ C
-+ C     DATA RMACH(1) / Z'00800000' /
-+ C     DATA RMACH(2) / Z'7F7FFFFF' /
-+ C     DATA RMACH(3) / Z'33800000' /
-+ C     DATA RMACH(4) / Z'34000000' /
-+ C     DATA RMACH(5) / Z'3E9A209B' /
-+ C
-+ C     MACHINE CONSTANTS FOR THE INTEL i860
-+ C
-+ C     DATA RMACH(1) / Z'00800000' /
-+ C     DATA RMACH(2) / Z'7F7FFFFF' /
-+ C     DATA RMACH(3) / Z'33800000' /
-+ C     DATA RMACH(4) / Z'34000000' /
-+ C     DATA RMACH(5) / Z'3E9A209B' /
-+ C
-+ C     MACHINE CONSTANTS FOR THE PDP-10 (KA OR KI PROCESSOR)
-+ C
-+ C     DATA RMACH(1) / "000400000000 /
-+ C     DATA RMACH(2) / "377777777777 /
-+ C     DATA RMACH(3) / "146400000000 /
-+ C     DATA RMACH(4) / "147400000000 /
-+ C     DATA RMACH(5) / "177464202324 /
-+ C
-+ C     MACHINE CONSTANTS FOR PDP-11 FORTRAN SUPPORTING
-+ C     32-BIT INTEGERS (EXPRESSED IN INTEGER AND OCTAL).
-+ C
-+ C     DATA SMALL(1) /    8388608 /
-+ C     DATA LARGE(1) / 2147483647 /
-+ C     DATA RIGHT(1) /  880803840 /
-+ C     DATA DIVER(1) /  889192448 /
-+ C     DATA LOG10(1) / 1067065499 /
-+ C
-+ C     DATA RMACH(1) / O00040000000 /
-+ C     DATA RMACH(2) / O17777777777 /
-+ C     DATA RMACH(3) / O06440000000 /
-+ C     DATA RMACH(4) / O06500000000 /
-+ C     DATA RMACH(5) / O07746420233 /
-+ C
-+ C     MACHINE CONSTANTS FOR PDP-11 FORTRAN SUPPORTING
-+ C     16-BIT INTEGERS  (EXPRESSED IN INTEGER AND OCTAL).
-+ C
-+ C     DATA SMALL(1), SMALL(2) /   128,     0 /
-+ C     DATA LARGE(1), LARGE(2) / 32767,    -1 /
-+ C     DATA RIGHT(1), RIGHT(2) / 13440,     0 /
-+ C     DATA DIVER(1), DIVER(2) / 13568,     0 /
-+ C     DATA LOG10(1), LOG10(2) / 16282,  8347 /
-+ C
-+ C     DATA SMALL(1), SMALL(2) / O000200, O000000 /
-+ C     DATA LARGE(1), LARGE(2) / O077777, O177777 /
-+ C     DATA RIGHT(1), RIGHT(2) / O032200, O000000 /
-+ C     DATA DIVER(1), DIVER(2) / O032400, O000000 /
-+ C     DATA LOG10(1), LOG10(2) / O037632, O020233 /
-+ C
-+ C     MACHINE CONSTANTS FOR THE SILICON GRAPHICS
-+ C
-+ C     DATA RMACH(1) / Z'00800000' /
-+ C     DATA RMACH(2) / Z'7F7FFFFF' /
-+ C     DATA RMACH(3) / Z'33800000' /
-+ C     DATA RMACH(4) / Z'34000000' /
-+ C     DATA RMACH(5) / Z'3E9A209B' /
-+ C
-+ C     MACHINE CONSTANTS FOR THE SUN
-+ C
-+ C     DATA RMACH(1) / Z'00800000' /
-+ C     DATA RMACH(2) / Z'7F7FFFFF' /
-+ C     DATA RMACH(3) / Z'33800000' /
-+ C     DATA RMACH(4) / Z'34000000' /
-+ C     DATA RMACH(5) / Z'3E9A209B' /
-+ C
-+ C     MACHINE CONSTANTS FOR THE SUN
-+ C     USING THE -r8 COMPILER OPTION
-+ C
-+ C     DATA RMACH(1) / Z'0010000000000000' /
-+ C     DATA RMACH(2) / Z'7FEFFFFFFFFFFFFF' /
-+ C     DATA RMACH(3) / Z'3CA0000000000000' /
-+ C     DATA RMACH(4) / Z'3CB0000000000000' /
-+ C     DATA RMACH(5) / Z'3FD34413509F79FF' /
-+ C
-+ C     MACHINE CONSTANTS FOR THE UNIVAC 1100 SERIES
-+ C
-+ C     DATA RMACH(1) / O000400000000 /
-+ C     DATA RMACH(2) / O377777777777 /
-+ C     DATA RMACH(3) / O146400000000 /
-+ C     DATA RMACH(4) / O147400000000 /
-+ C     DATA RMACH(5) / O177464202324 /
-+ C
-+ C     MACHINE CONSTANTS FOR THE Z80 MICROPROCESSOR
-+ C
-+ C     DATA SMALL(1), SMALL(2) /     0,    256/
-+ C     DATA LARGE(1), LARGE(2) /    -1,   -129/
-+ C     DATA RIGHT(1), RIGHT(2) /     0,  26880/
-+ C     DATA DIVER(1), DIVER(2) /     0,  27136/
-+ C     DATA LOG10(1), LOG10(2) /  8347,  32538/
-+ C
-+ C***FIRST EXECUTABLE STATEMENT  R1MACH
-+       IF (I .LT. 1 .OR. I .GT. 5) CALL XERMSG ('SLATEC', 'R1MACH',
-+      +   'I OUT OF BOUNDS', 1, 2)
-+ C
-+ 	if (iflag.eq.0) then
-+ 	   iflag=1
-+ 	   rmach(1)=slamch('u')
-+ 	   rmach(2)=slamch('o')
-+ 	   rmach(3)=slamch('e')
-+ 	   rmach(4)=slamch('p')
-+ 	   rmach(5)=slamch('b')
-+ 	   rmach(5)=log10(rmach(5))
-+ 	endif
-+       R1MACH = RMACH(I)
-+       RETURN
-+ C
-+       END
-diff -crNb clean/readme with_make/readme
-*** clean/readme	1970-01-01 09:00:00.000000000 +0900
---- with_make/readme	2000-09-19 05:29:20.000000000 +0900
-***************
-*** 0 ****
---- 1,57 ----
-+ 
-+ 
-+ 
-+ Synopsis.
-+ 
-+ This package contains some files which allow the compilation of Slatec library
-+ on Linux. It has been tested on RH 6.x on x86. Probably it works on other
-+ systems. The software packages required to compile and use the library are:
-+ egcs
-+ egcs-g77
-+ lapack
-+ 
-+ 
-+ 
-+ Installation.
-+ 
-+ Download slatec_src.tgz from netlib (www.netlib.org) and open the archive on
-+ a directory of your choice. In the same directory open this archive, then type
-+ make; make install
-+ This will compile and install the library (both static and dynamic) in
-+ /usr/local/lib and the man pages in /usr/local/man/man1. Change the makefile
-+ to change the installation directories. The makedoc.sed script builds the
-+ man pages from the initial comment of the sources.
-+ Note that you must be root to use the above directories and that /usr/local/lib
-+ must be listed in /etc/ld.so.conf .
-+ A program linked with slatec needs also to be linked with lapack, because the
-+ routines [sd]lamch are used in [dr]1mach.
-+ 
-+ 
-+ 
-+ Author.
-+ 
-+ Giuseppe Borzi'
-+ e-mail: etana@tiscalinet.it
-+ http://web.tiscalinet.it/gborzi
-+ fax: +39 1782235968
-+ Assistant Professor at the Univ. of Messina - Italia
-+ 
-+ 
-+ 
-+ License.
-+ 
-+ General Public License. Slatec is 'Freely distributable' as they say.
-+ 
-+ 
-+ 
-+ Filelist.
-+ 
-+ d1mach.f ( modified by including calls to dlamch )
-+ dynamic/makefile ( makefile for dynamic library )
-+ i1mach.f ( with lines for IBM PC uncommented )
-+ makedoc.sed ( builds man pages )
-+ makefile
-+ r1mach.f ( modified by including calls to slamch )
-+ readme ( this file )
-+ static/makefile ( makefile for static library )
-+ 
+diff -ruN clean/d1mach.f mod/d1mach.f
+--- clean/d1mach.f	1970-01-01 09:00:00.000000000 +0900
++++ mod/d1mach.f	1999-10-07 06:13:26.000000000 +0900
+@@ -0,0 +1,505 @@
++*DECK D1MACH
++      DOUBLE PRECISION FUNCTION D1MACH (I)
++C***BEGIN PROLOGUE  D1MACH
++C***PURPOSE  Return floating point machine dependent constants.
++C***LIBRARY   SLATEC
++C***CATEGORY  R1
++C***TYPE      DOUBLE PRECISION (R1MACH-S, D1MACH-D)
++C***KEYWORDS  MACHINE CONSTANTS
++C***AUTHOR  Fox, P. A., (Bell Labs)
++C           Hall, A. D., (Bell Labs)
++C           Schryer, N. L., (Bell Labs)
++C***DESCRIPTION
++C
++C   D1MACH can be used to obtain machine-dependent parameters for the
++C   local machine environment.  It is a function subprogram with one
++C   (input) argument, and can be referenced as follows:
++C
++C        D = D1MACH(I)
++C
++C   where I=1,...,5.  The (output) value of D above is determined by
++C   the (input) value of I.  The results for various values of I are
++C   discussed below.
++C
++C   D1MACH( 1) = B**(EMIN-1), the smallest positive magnitude.
++C   D1MACH( 2) = B**EMAX*(1 - B**(-T)), the largest magnitude.
++C   D1MACH( 3) = B**(-T), the smallest relative spacing.
++C   D1MACH( 4) = B**(1-T), the largest relative spacing.
++C   D1MACH( 5) = LOG10(B)
++C
++C   Assume double precision numbers are represented in the T-digit,
++C   base-B form
++C
++C              sign (B**E)*( (X(1)/B) + ... + (X(T)/B**T) )
++C
++C   where 0 .LE. X(I) .LT. B for I=1,...,T, 0 .LT. X(1), and
++C   EMIN .LE. E .LE. EMAX.
++C
++C   The values of B, T, EMIN and EMAX are provided in I1MACH as
++C   follows:
++C   I1MACH(10) = B, the base.
++C   I1MACH(14) = T, the number of base-B digits.
++C   I1MACH(15) = EMIN, the smallest exponent E.
++C   I1MACH(16) = EMAX, the largest exponent E.
++C
++C   To alter this function for a particular environment, the desired
++C   set of DATA statements should be activated by removing the C from
++C   column 1.  Also, the values of D1MACH(1) - D1MACH(4) should be
++C   checked for consistency with the local operating system.
++C
++C***REFERENCES  P. A. Fox, A. D. Hall and N. L. Schryer, Framework for
++C                 a portable library, ACM Transactions on Mathematical
++C                 Software 4, 2 (June 1978), pp. 177-188.
++C***ROUTINES CALLED  XERMSG
++C***REVISION HISTORY  (YYMMDD)
++C   750101  DATE WRITTEN
++C   890213  REVISION DATE from Version 3.2
++C   891214  Prologue converted to Version 4.0 format.  (BAB)
++C   900315  CALLs to XERROR changed to CALLs to XERMSG.  (THJ)
++C   900618  Added DEC RISC constants.  (WRB)
++C   900723  Added IBM RS 6000 constants.  (WRB)
++C   900911  Added SUN 386i constants.  (WRB)
++C   910710  Added HP 730 constants.  (SMR)
++C   911114  Added Convex IEEE constants.  (WRB)
++C   920121  Added SUN -r8 compiler option constants.  (WRB)
++C   920229  Added Touchstone Delta i860 constants.  (WRB)
++C   920501  Reformatted the REFERENCES section.  (WRB)
++C   920625  Added CONVEX -p8 and -pd8 compiler option constants.
++C           (BKS, WRB)
++C   930201  Added DEC Alpha and SGI constants.  (RWC and WRB)
++C***END PROLOGUE  D1MACH
++C
++C
++	external dlamch
++      DOUBLE PRECISION DMACH(5),dlamch
++	integer iflag
++
++      SAVE DMACH,iflag
++	data iflag/0/
++C
++C
++C     MACHINE CONSTANTS FOR THE AMIGA
++C     ABSOFT FORTRAN COMPILER USING THE 68020/68881 COMPILER OPTION
++C
++C     DATA SMALL(1), SMALL(2) / Z'00100000', Z'00000000' /
++C     DATA LARGE(1), LARGE(2) / Z'7FEFFFFF', Z'FFFFFFFF' /
++C     DATA RIGHT(1), RIGHT(2) / Z'3CA00000', Z'00000000' /
++C     DATA DIVER(1), DIVER(2) / Z'3CB00000', Z'00000000' /
++C     DATA LOG10(1), LOG10(2) / Z'3FD34413', Z'509F79FF' /
++C
++C     MACHINE CONSTANTS FOR THE AMIGA
++C     ABSOFT FORTRAN COMPILER USING SOFTWARE FLOATING POINT
++C
++C     DATA SMALL(1), SMALL(2) / Z'00100000', Z'00000000' /
++C     DATA LARGE(1), LARGE(2) / Z'7FDFFFFF', Z'FFFFFFFF' /
++C     DATA RIGHT(1), RIGHT(2) / Z'3CA00000', Z'00000000' /
++C     DATA DIVER(1), DIVER(2) / Z'3CB00000', Z'00000000' /
++C     DATA LOG10(1), LOG10(2) / Z'3FD34413', Z'509F79FF' /
++C
++C     MACHINE CONSTANTS FOR THE APOLLO
++C
++C     DATA SMALL(1), SMALL(2) / 16#00100000, 16#00000000 /
++C     DATA LARGE(1), LARGE(2) / 16#7FFFFFFF, 16#FFFFFFFF /
++C     DATA RIGHT(1), RIGHT(2) / 16#3CA00000, 16#00000000 /
++C     DATA DIVER(1), DIVER(2) / 16#3CB00000, 16#00000000 /
++C     DATA LOG10(1), LOG10(2) / 16#3FD34413, 16#509F79FF /
++C
++C     MACHINE CONSTANTS FOR THE BURROUGHS 1700 SYSTEM
++C
++C     DATA SMALL(1) / ZC00800000 /
++C     DATA SMALL(2) / Z000000000 /
++C     DATA LARGE(1) / ZDFFFFFFFF /
++C     DATA LARGE(2) / ZFFFFFFFFF /
++C     DATA RIGHT(1) / ZCC5800000 /
++C     DATA RIGHT(2) / Z000000000 /
++C     DATA DIVER(1) / ZCC6800000 /
++C     DATA DIVER(2) / Z000000000 /
++C     DATA LOG10(1) / ZD00E730E7 /
++C     DATA LOG10(2) / ZC77800DC0 /
++C
++C     MACHINE CONSTANTS FOR THE BURROUGHS 5700 SYSTEM
++C
++C     DATA SMALL(1) / O1771000000000000 /
++C     DATA SMALL(2) / O0000000000000000 /
++C     DATA LARGE(1) / O0777777777777777 /
++C     DATA LARGE(2) / O0007777777777777 /
++C     DATA RIGHT(1) / O1461000000000000 /
++C     DATA RIGHT(2) / O0000000000000000 /
++C     DATA DIVER(1) / O1451000000000000 /
++C     DATA DIVER(2) / O0000000000000000 /
++C     DATA LOG10(1) / O1157163034761674 /
++C     DATA LOG10(2) / O0006677466732724 /
++C
++C     MACHINE CONSTANTS FOR THE BURROUGHS 6700/7700 SYSTEMS
++C
++C     DATA SMALL(1) / O1771000000000000 /
++C     DATA SMALL(2) / O7770000000000000 /
++C     DATA LARGE(1) / O0777777777777777 /
++C     DATA LARGE(2) / O7777777777777777 /
++C     DATA RIGHT(1) / O1461000000000000 /
++C     DATA RIGHT(2) / O0000000000000000 /
++C     DATA DIVER(1) / O1451000000000000 /
++C     DATA DIVER(2) / O0000000000000000 /
++C     DATA LOG10(1) / O1157163034761674 /
++C     DATA LOG10(2) / O0006677466732724 /
++C
++C     MACHINE CONSTANTS FOR THE CDC 170/180 SERIES USING NOS/VE
++C
++C     DATA SMALL(1) / Z"3001800000000000" /
++C     DATA SMALL(2) / Z"3001000000000000" /
++C     DATA LARGE(1) / Z"4FFEFFFFFFFFFFFE" /
++C     DATA LARGE(2) / Z"4FFE000000000000" /
++C     DATA RIGHT(1) / Z"3FD2800000000000" /
++C     DATA RIGHT(2) / Z"3FD2000000000000" /
++C     DATA DIVER(1) / Z"3FD3800000000000" /
++C     DATA DIVER(2) / Z"3FD3000000000000" /
++C     DATA LOG10(1) / Z"3FFF9A209A84FBCF" /
++C     DATA LOG10(2) / Z"3FFFF7988F8959AC" /
++C
++C     MACHINE CONSTANTS FOR THE CDC 6000/7000 SERIES
++C
++C     DATA SMALL(1) / 00564000000000000000B /
++C     DATA SMALL(2) / 00000000000000000000B /
++C     DATA LARGE(1) / 37757777777777777777B /
++C     DATA LARGE(2) / 37157777777777777777B /
++C     DATA RIGHT(1) / 15624000000000000000B /
++C     DATA RIGHT(2) / 00000000000000000000B /
++C     DATA DIVER(1) / 15634000000000000000B /
++C     DATA DIVER(2) / 00000000000000000000B /
++C     DATA LOG10(1) / 17164642023241175717B /
++C     DATA LOG10(2) / 16367571421742254654B /
++C
++C     MACHINE CONSTANTS FOR THE CELERITY C1260
++C
++C     DATA SMALL(1), SMALL(2) / Z'00100000', Z'00000000' /
++C     DATA LARGE(1), LARGE(2) / Z'7FEFFFFF', Z'FFFFFFFF' /
++C     DATA RIGHT(1), RIGHT(2) / Z'3CA00000', Z'00000000' /
++C     DATA DIVER(1), DIVER(2) / Z'3CB00000', Z'00000000' /
++C     DATA LOG10(1), LOG10(2) / Z'3FD34413', Z'509F79FF' /
++C
++C     MACHINE CONSTANTS FOR THE CONVEX
++C     USING THE -fn OR -pd8 COMPILER OPTION
++C
++C     DATA DMACH(1) / Z'0010000000000000' /
++C     DATA DMACH(2) / Z'7FFFFFFFFFFFFFFF' /
++C     DATA DMACH(3) / Z'3CC0000000000000' /
++C     DATA DMACH(4) / Z'3CD0000000000000' /
++C     DATA DMACH(5) / Z'3FF34413509F79FF' /
++C
++C     MACHINE CONSTANTS FOR THE CONVEX
++C     USING THE -fi COMPILER OPTION
++C
++C     DATA DMACH(1) / Z'0010000000000000' /
++C     DATA DMACH(2) / Z'7FEFFFFFFFFFFFFF' /
++C     DATA DMACH(3) / Z'3CA0000000000000' /
++C     DATA DMACH(4) / Z'3CB0000000000000' /
++C     DATA DMACH(5) / Z'3FD34413509F79FF' /
++C
++C     MACHINE CONSTANTS FOR THE CONVEX
++C     USING THE -p8 COMPILER OPTION
++C
++C     DATA DMACH(1) / Z'00010000000000000000000000000000' /
++C     DATA DMACH(2) / Z'7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF' /
++C     DATA DMACH(3) / Z'3F900000000000000000000000000000' /
++C     DATA DMACH(4) / Z'3F910000000000000000000000000000' /
++C     DATA DMACH(5) / Z'3FFF34413509F79FEF311F12B35816F9' /
++C
++C     MACHINE CONSTANTS FOR THE CRAY
++C
++C     DATA SMALL(1) / 201354000000000000000B /
++C     DATA SMALL(2) / 000000000000000000000B /
++C     DATA LARGE(1) / 577767777777777777777B /
++C     DATA LARGE(2) / 000007777777777777774B /
++C     DATA RIGHT(1) / 376434000000000000000B /
++C     DATA RIGHT(2) / 000000000000000000000B /
++C     DATA DIVER(1) / 376444000000000000000B /
++C     DATA DIVER(2) / 000000000000000000000B /
++C     DATA LOG10(1) / 377774642023241175717B /
++C     DATA LOG10(2) / 000007571421742254654B /
++C
++C     MACHINE CONSTANTS FOR THE DATA GENERAL ECLIPSE S/200
++C     NOTE - IT MAY BE APPROPRIATE TO INCLUDE THE FOLLOWING CARD -
++C     STATIC DMACH(5)
++C
++C     DATA SMALL /    20K, 3*0 /
++C     DATA LARGE / 77777K, 3*177777K /
++C     DATA RIGHT / 31420K, 3*0 /
++C     DATA DIVER / 32020K, 3*0 /
++C     DATA LOG10 / 40423K, 42023K, 50237K, 74776K /
++C
++C     MACHINE CONSTANTS FOR THE DEC ALPHA
++C     USING G_FLOAT
++C
++C     DATA DMACH(1) / '0000000000000010'X /
++C     DATA DMACH(2) / 'FFFFFFFFFFFF7FFF'X /
++C     DATA DMACH(3) / '0000000000003CC0'X /
++C     DATA DMACH(4) / '0000000000003CD0'X /
++C     DATA DMACH(5) / '79FF509F44133FF3'X /
++C
++C     MACHINE CONSTANTS FOR THE DEC ALPHA
++C     USING IEEE_FORMAT
++C
++C     DATA DMACH(1) / '0010000000000000'X /
++C     DATA DMACH(2) / '7FEFFFFFFFFFFFFF'X /
++C     DATA DMACH(3) / '3CA0000000000000'X /
++C     DATA DMACH(4) / '3CB0000000000000'X /
++C     DATA DMACH(5) / '3FD34413509F79FF'X /
++C
++C     MACHINE CONSTANTS FOR THE DEC RISC
++C
++C     DATA SMALL(1), SMALL(2) / Z'00000000', Z'00100000'/
++C     DATA LARGE(1), LARGE(2) / Z'FFFFFFFF', Z'7FEFFFFF'/
++C     DATA RIGHT(1), RIGHT(2) / Z'00000000', Z'3CA00000'/
++C     DATA DIVER(1), DIVER(2) / Z'00000000', Z'3CB00000'/
++C     DATA LOG10(1), LOG10(2) / Z'509F79FF', Z'3FD34413'/
++C
++C     MACHINE CONSTANTS FOR THE DEC VAX
++C     USING D_FLOATING
++C     (EXPRESSED IN INTEGER AND HEXADECIMAL)
++C     THE HEX FORMAT BELOW MAY NOT BE SUITABLE FOR UNIX SYSTEMS
++C     THE INTEGER FORMAT SHOULD BE OK FOR UNIX SYSTEMS
++C
++C     DATA SMALL(1), SMALL(2) /        128,           0 /
++C     DATA LARGE(1), LARGE(2) /     -32769,          -1 /
++C     DATA RIGHT(1), RIGHT(2) /       9344,           0 /
++C     DATA DIVER(1), DIVER(2) /       9472,           0 /
++C     DATA LOG10(1), LOG10(2) /  546979738,  -805796613 /
++C
++C     DATA SMALL(1), SMALL(2) / Z00000080, Z00000000 /
++C     DATA LARGE(1), LARGE(2) / ZFFFF7FFF, ZFFFFFFFF /
++C     DATA RIGHT(1), RIGHT(2) / Z00002480, Z00000000 /
++C     DATA DIVER(1), DIVER(2) / Z00002500, Z00000000 /
++C     DATA LOG10(1), LOG10(2) / Z209A3F9A, ZCFF884FB /
++C
++C     MACHINE CONSTANTS FOR THE DEC VAX
++C     USING G_FLOATING
++C     (EXPRESSED IN INTEGER AND HEXADECIMAL)
++C     THE HEX FORMAT BELOW MAY NOT BE SUITABLE FOR UNIX SYSTEMS
++C     THE INTEGER FORMAT SHOULD BE OK FOR UNIX SYSTEMS
++C
++C     DATA SMALL(1), SMALL(2) /         16,           0 /
++C     DATA LARGE(1), LARGE(2) /     -32769,          -1 /
++C     DATA RIGHT(1), RIGHT(2) /      15552,           0 /
++C     DATA DIVER(1), DIVER(2) /      15568,           0 /
++C     DATA LOG10(1), LOG10(2) /  1142112243, 2046775455 /
++C
++C     DATA SMALL(1), SMALL(2) / Z00000010, Z00000000 /
++C     DATA LARGE(1), LARGE(2) / ZFFFF7FFF, ZFFFFFFFF /
++C     DATA RIGHT(1), RIGHT(2) / Z00003CC0, Z00000000 /
++C     DATA DIVER(1), DIVER(2) / Z00003CD0, Z00000000 /
++C     DATA LOG10(1), LOG10(2) / Z44133FF3, Z79FF509F /
++C
++C     MACHINE CONSTANTS FOR THE ELXSI 6400
++C     (ASSUMING REAL*8 IS THE DEFAULT DOUBLE PRECISION)
++C
++C     DATA SMALL(1), SMALL(2) / '00100000'X,'00000000'X /
++C     DATA LARGE(1), LARGE(2) / '7FEFFFFF'X,'FFFFFFFF'X /
++C     DATA RIGHT(1), RIGHT(2) / '3CB00000'X,'00000000'X /
++C     DATA DIVER(1), DIVER(2) / '3CC00000'X,'00000000'X /
++C     DATA LOG10(1), LOG10(2) / '3FD34413'X,'509F79FF'X /
++C
++C     MACHINE CONSTANTS FOR THE HARRIS 220
++C
++C     DATA SMALL(1), SMALL(2) / '20000000, '00000201 /
++C     DATA LARGE(1), LARGE(2) / '37777777, '37777577 /
++C     DATA RIGHT(1), RIGHT(2) / '20000000, '00000333 /
++C     DATA DIVER(1), DIVER(2) / '20000000, '00000334 /
++C     DATA LOG10(1), LOG10(2) / '23210115, '10237777 /
++C
++C     MACHINE CONSTANTS FOR THE HONEYWELL 600/6000 SERIES
++C
++C     DATA SMALL(1), SMALL(2) / O402400000000, O000000000000 /
++C     DATA LARGE(1), LARGE(2) / O376777777777, O777777777777 /
++C     DATA RIGHT(1), RIGHT(2) / O604400000000, O000000000000 /
++C     DATA DIVER(1), DIVER(2) / O606400000000, O000000000000 /
++C     DATA LOG10(1), LOG10(2) / O776464202324, O117571775714 /
++C
++C     MACHINE CONSTANTS FOR THE HP 730
++C
++C     DATA DMACH(1) / Z'0010000000000000' /
++C     DATA DMACH(2) / Z'7FEFFFFFFFFFFFFF' /
++C     DATA DMACH(3) / Z'3CA0000000000000' /
++C     DATA DMACH(4) / Z'3CB0000000000000' /
++C     DATA DMACH(5) / Z'3FD34413509F79FF' /
++C
++C     MACHINE CONSTANTS FOR THE HP 2100
++C     THREE WORD DOUBLE PRECISION OPTION WITH FTN4
++C
++C     DATA SMALL(1), SMALL(2), SMALL(3) / 40000B,       0,       1 /
++C     DATA LARGE(1), LARGE(2), LARGE(3) / 77777B, 177777B, 177776B /
++C     DATA RIGHT(1), RIGHT(2), RIGHT(3) / 40000B,       0,    265B /
++C     DATA DIVER(1), DIVER(2), DIVER(3) / 40000B,       0,    276B /
++C     DATA LOG10(1), LOG10(2), LOG10(3) / 46420B,  46502B,  77777B /
++C
++C     MACHINE CONSTANTS FOR THE HP 2100
++C     FOUR WORD DOUBLE PRECISION OPTION WITH FTN4
++C
++C     DATA SMALL(1), SMALL(2) /  40000B,       0 /
++C     DATA SMALL(3), SMALL(4) /       0,       1 /
++C     DATA LARGE(1), LARGE(2) /  77777B, 177777B /
++C     DATA LARGE(3), LARGE(4) / 177777B, 177776B /
++C     DATA RIGHT(1), RIGHT(2) /  40000B,       0 /
++C     DATA RIGHT(3), RIGHT(4) /       0,    225B /
++C     DATA DIVER(1), DIVER(2) /  40000B,       0 /
++C     DATA DIVER(3), DIVER(4) /       0,    227B /
++C     DATA LOG10(1), LOG10(2) /  46420B,  46502B /
++C     DATA LOG10(3), LOG10(4) /  76747B, 176377B /
++C
++C     MACHINE CONSTANTS FOR THE HP 9000
++C
++C     DATA SMALL(1), SMALL(2) / 00040000000B, 00000000000B /
++C     DATA LARGE(1), LARGE(2) / 17737777777B, 37777777777B /
++C     DATA RIGHT(1), RIGHT(2) / 07454000000B, 00000000000B /
++C     DATA DIVER(1), DIVER(2) / 07460000000B, 00000000000B /
++C     DATA LOG10(1), LOG10(2) / 07764642023B, 12047674777B /
++C
++C     MACHINE CONSTANTS FOR THE IBM 360/370 SERIES,
++C     THE XEROX SIGMA 5/7/9, THE SEL SYSTEMS 85/86, AND
++C     THE PERKIN ELMER (INTERDATA) 7/32.
++C
++C     DATA SMALL(1), SMALL(2) / Z00100000, Z00000000 /
++C     DATA LARGE(1), LARGE(2) / Z7FFFFFFF, ZFFFFFFFF /
++C     DATA RIGHT(1), RIGHT(2) / Z33100000, Z00000000 /
++C     DATA DIVER(1), DIVER(2) / Z34100000, Z00000000 /
++C     DATA LOG10(1), LOG10(2) / Z41134413, Z509F79FF /
++C
++C     MACHINE CONSTANTS FOR THE IBM PC
++C     ASSUMES THAT ALL ARITHMETIC IS DONE IN DOUBLE PRECISION
++C     ON 8088, I.E., NOT IN 80 BIT FORM FOR THE 8087.
++C
++C     DATA SMALL(1) / 2.23D-308  /
++C     DATA LARGE(1) / 1.79D+308  /
++C     DATA RIGHT(1) / 1.11D-16   /
++C     DATA DIVER(1) / 2.22D-16   /
++C     DATA LOG10(1) / 0.301029995663981195D0 /
++C
++C     MACHINE CONSTANTS FOR THE IBM RS 6000
++C
++C     DATA DMACH(1) / Z'0010000000000000' /
++C     DATA DMACH(2) / Z'7FEFFFFFFFFFFFFF' /
++C     DATA DMACH(3) / Z'3CA0000000000000' /
++C     DATA DMACH(4) / Z'3CB0000000000000' /
++C     DATA DMACH(5) / Z'3FD34413509F79FF' /
++C
++C     MACHINE CONSTANTS FOR THE INTEL i860
++C
++C     DATA DMACH(1) / Z'0010000000000000' /
++C     DATA DMACH(2) / Z'7FEFFFFFFFFFFFFF' /
++C     DATA DMACH(3) / Z'3CA0000000000000' /
++C     DATA DMACH(4) / Z'3CB0000000000000' /
++C     DATA DMACH(5) / Z'3FD34413509F79FF' /
++C
++C     MACHINE CONSTANTS FOR THE PDP-10 (KA PROCESSOR)
++C
++C     DATA SMALL(1), SMALL(2) / "033400000000, "000000000000 /
++C     DATA LARGE(1), LARGE(2) / "377777777777, "344777777777 /
++C     DATA RIGHT(1), RIGHT(2) / "113400000000, "000000000000 /
++C     DATA DIVER(1), DIVER(2) / "114400000000, "000000000000 /
++C     DATA LOG10(1), LOG10(2) / "177464202324, "144117571776 /
++C
++C     MACHINE CONSTANTS FOR THE PDP-10 (KI PROCESSOR)
++C
++C     DATA SMALL(1), SMALL(2) / "000400000000, "000000000000 /
++C     DATA LARGE(1), LARGE(2) / "377777777777, "377777777777 /
++C     DATA RIGHT(1), RIGHT(2) / "103400000000, "000000000000 /
++C     DATA DIVER(1), DIVER(2) / "104400000000, "000000000000 /
++C     DATA LOG10(1), LOG10(2) / "177464202324, "476747767461 /
++C
++C     MACHINE CONSTANTS FOR PDP-11 FORTRAN SUPPORTING
++C     32-BIT INTEGERS (EXPRESSED IN INTEGER AND OCTAL).
++C
++C     DATA SMALL(1), SMALL(2) /    8388608,           0 /
++C     DATA LARGE(1), LARGE(2) / 2147483647,          -1 /
++C     DATA RIGHT(1), RIGHT(2) /  612368384,           0 /
++C     DATA DIVER(1), DIVER(2) /  620756992,           0 /
++C     DATA LOG10(1), LOG10(2) / 1067065498, -2063872008 /
++C
++C     DATA SMALL(1), SMALL(2) / O00040000000, O00000000000 /
++C     DATA LARGE(1), LARGE(2) / O17777777777, O37777777777 /
++C     DATA RIGHT(1), RIGHT(2) / O04440000000, O00000000000 /
++C     DATA DIVER(1), DIVER(2) / O04500000000, O00000000000 /
++C     DATA LOG10(1), LOG10(2) / O07746420232, O20476747770 /
++C
++C     MACHINE CONSTANTS FOR PDP-11 FORTRAN SUPPORTING
++C     16-BIT INTEGERS (EXPRESSED IN INTEGER AND OCTAL).
++C
++C     DATA SMALL(1), SMALL(2) /    128,      0 /
++C     DATA SMALL(3), SMALL(4) /      0,      0 /
++C     DATA LARGE(1), LARGE(2) /  32767,     -1 /
++C     DATA LARGE(3), LARGE(4) /     -1,     -1 /
++C     DATA RIGHT(1), RIGHT(2) /   9344,      0 /
++C     DATA RIGHT(3), RIGHT(4) /      0,      0 /
++C     DATA DIVER(1), DIVER(2) /   9472,      0 /
++C     DATA DIVER(3), DIVER(4) /      0,      0 /
++C     DATA LOG10(1), LOG10(2) /  16282,   8346 /
++C     DATA LOG10(3), LOG10(4) / -31493, -12296 /
++C
++C     DATA SMALL(1), SMALL(2) / O000200, O000000 /
++C     DATA SMALL(3), SMALL(4) / O000000, O000000 /
++C     DATA LARGE(1), LARGE(2) / O077777, O177777 /
++C     DATA LARGE(3), LARGE(4) / O177777, O177777 /
++C     DATA RIGHT(1), RIGHT(2) / O022200, O000000 /
++C     DATA RIGHT(3), RIGHT(4) / O000000, O000000 /
++C     DATA DIVER(1), DIVER(2) / O022400, O000000 /
++C     DATA DIVER(3), DIVER(4) / O000000, O000000 /
++C     DATA LOG10(1), LOG10(2) / O037632, O020232 /
++C     DATA LOG10(3), LOG10(4) / O102373, O147770 /
++C
++C     MACHINE CONSTANTS FOR THE SILICON GRAPHICS
++C
++C     DATA SMALL(1), SMALL(2) / Z'00100000', Z'00000000' /
++C     DATA LARGE(1), LARGE(2) / Z'7FEFFFFF', Z'FFFFFFFF' /
++C     DATA RIGHT(1), RIGHT(2) / Z'3CA00000', Z'00000000' /
++C     DATA DIVER(1), DIVER(2) / Z'3CB00000', Z'00000000' /
++C     DATA LOG10(1), LOG10(2) / Z'3FD34413', Z'509F79FF' /
++C
++C     MACHINE CONSTANTS FOR THE SUN
++C
++C     DATA DMACH(1) / Z'0010000000000000' /
++C     DATA DMACH(2) / Z'7FEFFFFFFFFFFFFF' /
++C     DATA DMACH(3) / Z'3CA0000000000000' /
++C     DATA DMACH(4) / Z'3CB0000000000000' /
++C     DATA DMACH(5) / Z'3FD34413509F79FF' /
++C
++C     MACHINE CONSTANTS FOR THE SUN
++C     USING THE -r8 COMPILER OPTION
++C
++C     DATA DMACH(1) / Z'00010000000000000000000000000000' /
++C     DATA DMACH(2) / Z'7FFEFFFFFFFFFFFFFFFFFFFFFFFFFFFF' /
++C     DATA DMACH(3) / Z'3F8E0000000000000000000000000000' /
++C     DATA DMACH(4) / Z'3F8F0000000000000000000000000000' /
++C     DATA DMACH(5) / Z'3FFD34413509F79FEF311F12B35816F9' /
++C
++C     MACHINE CONSTANTS FOR THE SUN 386i
++C
++C     DATA SMALL(1), SMALL(2) / Z'FFFFFFFD', Z'000FFFFF' /
++C     DATA LARGE(1), LARGE(2) / Z'FFFFFFB0', Z'7FEFFFFF' /
++C     DATA RIGHT(1), RIGHT(2) / Z'000000B0', Z'3CA00000' /
++C     DATA DIVER(1), DIVER(2) / Z'FFFFFFCB', Z'3CAFFFFF'
++C     DATA LOG10(1), LOG10(2) / Z'509F79E9', Z'3FD34413' /
++C
++C     MACHINE CONSTANTS FOR THE UNIVAC 1100 SERIES FTN COMPILER
++C
++C     DATA SMALL(1), SMALL(2) / O000040000000, O000000000000 /
++C     DATA LARGE(1), LARGE(2) / O377777777777, O777777777777 /
++C     DATA RIGHT(1), RIGHT(2) / O170540000000, O000000000000 /
++C     DATA DIVER(1), DIVER(2) / O170640000000, O000000000000 /
++C     DATA LOG10(1), LOG10(2) / O177746420232, O411757177572 /
++C
++C***FIRST EXECUTABLE STATEMENT  D1MACH
++      IF (I .LT. 1 .OR. I .GT. 5) CALL XERMSG ('SLATEC', 'D1MACH',
++     +   'I OUT OF BOUNDS', 1, 2)
++C
++	if (iflag.eq.0) then
++	   iflag=1
++	   dmach(1)=dlamch('u')
++	   dmach(2)=dlamch('o')
++	   dmach(3)=dlamch('e')
++	   dmach(4)=dlamch('p')
++	   dmach(5)=dlamch('b')
++	   dmach(5)=log10(dmach(5))
++	endif
++      D1MACH = DMACH(I)
++      RETURN
++C
++      END
+diff -ruN clean/i1mach.f mod/i1mach.f
+--- clean/i1mach.f	1970-01-01 09:00:00.000000000 +0900
++++ mod/i1mach.f	1999-10-07 06:10:33.000000000 +0900
+@@ -0,0 +1,888 @@
++*DECK I1MACH
++      INTEGER FUNCTION I1MACH (I)
++C***BEGIN PROLOGUE  I1MACH
++C***PURPOSE  Return integer machine dependent constants.
++C***LIBRARY   SLATEC
++C***CATEGORY  R1
++C***TYPE      INTEGER (I1MACH-I)
++C***KEYWORDS  MACHINE CONSTANTS
++C***AUTHOR  Fox, P. A., (Bell Labs)
++C           Hall, A. D., (Bell Labs)
++C           Schryer, N. L., (Bell Labs)
++C***DESCRIPTION
++C
++C   I1MACH can be used to obtain machine-dependent parameters for the
++C   local machine environment.  It is a function subprogram with one
++C   (input) argument and can be referenced as follows:
++C
++C        K = I1MACH(I)
++C
++C   where I=1,...,16.  The (output) value of K above is determined by
++C   the (input) value of I.  The results for various values of I are
++C   discussed below.
++C
++C   I/O unit numbers:
++C     I1MACH( 1) = the standard input unit.
++C     I1MACH( 2) = the standard output unit.
++C     I1MACH( 3) = the standard punch unit.
++C     I1MACH( 4) = the standard error message unit.
++C
++C   Words:
++C     I1MACH( 5) = the number of bits per integer storage unit.
++C     I1MACH( 6) = the number of characters per integer storage unit.
++C
++C   Integers:
++C     assume integers are represented in the S-digit, base-A form
++C
++C                sign ( X(S-1)*A**(S-1) + ... + X(1)*A + X(0) )
++C
++C                where 0 .LE. X(I) .LT. A for I=0,...,S-1.
++C     I1MACH( 7) = A, the base.
++C     I1MACH( 8) = S, the number of base-A digits.
++C     I1MACH( 9) = A**S - 1, the largest magnitude.
++C
++C   Floating-Point Numbers:
++C     Assume floating-point numbers are represented in the T-digit,
++C     base-B form
++C                sign (B**E)*( (X(1)/B) + ... + (X(T)/B**T) )
++C
++C                where 0 .LE. X(I) .LT. B for I=1,...,T,
++C                0 .LT. X(1), and EMIN .LE. E .LE. EMAX.
++C     I1MACH(10) = B, the base.
++C
++C   Single-Precision:
++C     I1MACH(11) = T, the number of base-B digits.
++C     I1MACH(12) = EMIN, the smallest exponent E.
++C     I1MACH(13) = EMAX, the largest exponent E.
++C
++C   Double-Precision:
++C     I1MACH(14) = T, the number of base-B digits.
++C     I1MACH(15) = EMIN, the smallest exponent E.
++C     I1MACH(16) = EMAX, the largest exponent E.
++C
++C   To alter this function for a particular environment, the desired
++C   set of DATA statements should be activated by removing the C from
++C   column 1.  Also, the values of I1MACH(1) - I1MACH(4) should be
++C   checked for consistency with the local operating system.
++C
++C***REFERENCES  P. A. Fox, A. D. Hall and N. L. Schryer, Framework for
++C                 a portable library, ACM Transactions on Mathematical
++C                 Software 4, 2 (June 1978), pp. 177-188.
++C***ROUTINES CALLED  (NONE)
++C***REVISION HISTORY  (YYMMDD)
++C   750101  DATE WRITTEN
++C   891012  Added VAX G-floating constants.  (WRB)
++C   891012  REVISION DATE from Version 3.2
++C   891214  Prologue converted to Version 4.0 format.  (BAB)
++C   900618  Added DEC RISC constants.  (WRB)
++C   900723  Added IBM RS 6000 constants.  (WRB)
++C   901009  Correct I1MACH(7) for IBM Mainframes. Should be 2 not 16.
++C           (RWC)
++C   910710  Added HP 730 constants.  (SMR)
++C   911114  Added Convex IEEE constants.  (WRB)
++C   920121  Added SUN -r8 compiler option constants.  (WRB)
++C   920229  Added Touchstone Delta i860 constants.  (WRB)
++C   920501  Reformatted the REFERENCES section.  (WRB)
++C   920625  Added Convex -p8 and -pd8 compiler option constants.
++C           (BKS, WRB)
++C   930201  Added DEC Alpha and SGI constants.  (RWC and WRB)
++C   930618  Corrected I1MACH(5) for Convex -p8 and -pd8 compiler
++C           options.  (DWL, RWC and WRB).
++C***END PROLOGUE  I1MACH
++C
++      INTEGER IMACH(16),OUTPUT
++      SAVE IMACH
++      EQUIVALENCE (IMACH(4),OUTPUT)
++C
++C     MACHINE CONSTANTS FOR THE AMIGA
++C     ABSOFT COMPILER
++C
++C     DATA IMACH( 1) /          5 /
++C     DATA IMACH( 2) /          6 /
++C     DATA IMACH( 3) /          5 /
++C     DATA IMACH( 4) /          6 /
++C     DATA IMACH( 5) /         32 /
++C     DATA IMACH( 6) /          4 /
++C     DATA IMACH( 7) /          2 /
++C     DATA IMACH( 8) /         31 /
++C     DATA IMACH( 9) / 2147483647 /
++C     DATA IMACH(10) /          2 /
++C     DATA IMACH(11) /         24 /
++C     DATA IMACH(12) /       -126 /
++C     DATA IMACH(13) /        127 /
++C     DATA IMACH(14) /         53 /
++C     DATA IMACH(15) /      -1022 /
++C     DATA IMACH(16) /       1023 /
++C
++C     MACHINE CONSTANTS FOR THE APOLLO
++C
++C     DATA IMACH( 1) /          5 /
++C     DATA IMACH( 2) /          6 /
++C     DATA IMACH( 3) /          6 /
++C     DATA IMACH( 4) /          6 /
++C     DATA IMACH( 5) /         32 /
++C     DATA IMACH( 6) /          4 /
++C     DATA IMACH( 7) /          2 /
++C     DATA IMACH( 8) /         31 /
++C     DATA IMACH( 9) / 2147483647 /
++C     DATA IMACH(10) /          2 /
++C     DATA IMACH(11) /         24 /
++C     DATA IMACH(12) /       -125 /
++C     DATA IMACH(13) /        129 /
++C     DATA IMACH(14) /         53 /
++C     DATA IMACH(15) /      -1021 /
++C     DATA IMACH(16) /       1025 /
++C
++C     MACHINE CONSTANTS FOR THE BURROUGHS 1700 SYSTEM
++C
++C     DATA IMACH( 1) /          7 /
++C     DATA IMACH( 2) /          2 /
++C     DATA IMACH( 3) /          2 /
++C     DATA IMACH( 4) /          2 /
++C     DATA IMACH( 5) /         36 /
++C     DATA IMACH( 6) /          4 /
++C     DATA IMACH( 7) /          2 /
++C     DATA IMACH( 8) /         33 /
++C     DATA IMACH( 9) / Z1FFFFFFFF /
++C     DATA IMACH(10) /          2 /
++C     DATA IMACH(11) /         24 /
++C     DATA IMACH(12) /       -256 /
++C     DATA IMACH(13) /        255 /
++C     DATA IMACH(14) /         60 /
++C     DATA IMACH(15) /       -256 /
++C     DATA IMACH(16) /        255 /
++C
++C     MACHINE CONSTANTS FOR THE BURROUGHS 5700 SYSTEM
++C
++C     DATA IMACH( 1) /          5 /
++C     DATA IMACH( 2) /          6 /
++C     DATA IMACH( 3) /          7 /
++C     DATA IMACH( 4) /          6 /
++C     DATA IMACH( 5) /         48 /
++C     DATA IMACH( 6) /          6 /
++C     DATA IMACH( 7) /          2 /
++C     DATA IMACH( 8) /         39 /
++C     DATA IMACH( 9) / O0007777777777777 /
++C     DATA IMACH(10) /          8 /
++C     DATA IMACH(11) /         13 /
++C     DATA IMACH(12) /        -50 /
++C     DATA IMACH(13) /         76 /
++C     DATA IMACH(14) /         26 /
++C     DATA IMACH(15) /        -50 /
++C     DATA IMACH(16) /         76 /
++C
++C     MACHINE CONSTANTS FOR THE BURROUGHS 6700/7700 SYSTEMS
++C
++C     DATA IMACH( 1) /          5 /
++C     DATA IMACH( 2) /          6 /
++C     DATA IMACH( 3) /          7 /
++C     DATA IMACH( 4) /          6 /
++C     DATA IMACH( 5) /         48 /
++C     DATA IMACH( 6) /          6 /
++C     DATA IMACH( 7) /          2 /
++C     DATA IMACH( 8) /         39 /
++C     DATA IMACH( 9) / O0007777777777777 /
++C     DATA IMACH(10) /          8 /
++C     DATA IMACH(11) /         13 /
++C     DATA IMACH(12) /        -50 /
++C     DATA IMACH(13) /         76 /
++C     DATA IMACH(14) /         26 /
++C     DATA IMACH(15) /     -32754 /
++C     DATA IMACH(16) /      32780 /
++C
++C     MACHINE CONSTANTS FOR THE CDC 170/180 SERIES USING NOS/VE
++C
++C     DATA IMACH( 1) /          5 /
++C     DATA IMACH( 2) /          6 /
++C     DATA IMACH( 3) /          7 /
++C     DATA IMACH( 4) /          6 /
++C     DATA IMACH( 5) /         64 /
++C     DATA IMACH( 6) /          8 /
++C     DATA IMACH( 7) /          2 /
++C     DATA IMACH( 8) /         63 /
++C     DATA IMACH( 9) / 9223372036854775807 /
++C     DATA IMACH(10) /          2 /
++C     DATA IMACH(11) /         47 /
++C     DATA IMACH(12) /      -4095 /
++C     DATA IMACH(13) /       4094 /
++C     DATA IMACH(14) /         94 /
++C     DATA IMACH(15) /      -4095 /
++C     DATA IMACH(16) /       4094 /
++C
++C     MACHINE CONSTANTS FOR THE CDC 6000/7000 SERIES
++C
++C     DATA IMACH( 1) /          5 /
++C     DATA IMACH( 2) /          6 /
++C     DATA IMACH( 3) /          7 /
++C     DATA IMACH( 4) /    6LOUTPUT/
++C     DATA IMACH( 5) /         60 /
++C     DATA IMACH( 6) /         10 /
++C     DATA IMACH( 7) /          2 /
++C     DATA IMACH( 8) /         48 /
++C     DATA IMACH( 9) / 00007777777777777777B /
++C     DATA IMACH(10) /          2 /
++C     DATA IMACH(11) /         47 /
++C     DATA IMACH(12) /       -929 /
++C     DATA IMACH(13) /       1070 /
++C     DATA IMACH(14) /         94 /
++C     DATA IMACH(15) /       -929 /
++C     DATA IMACH(16) /       1069 /
++C
++C     MACHINE CONSTANTS FOR THE CELERITY C1260
++C
++C     DATA IMACH( 1) /          5 /
++C     DATA IMACH( 2) /          6 /
++C     DATA IMACH( 3) /          6 /
++C     DATA IMACH( 4) /          0 /
++C     DATA IMACH( 5) /         32 /
++C     DATA IMACH( 6) /          4 /
++C     DATA IMACH( 7) /          2 /
++C     DATA IMACH( 8) /         31 /
++C     DATA IMACH( 9) / Z'7FFFFFFF' /
++C     DATA IMACH(10) /          2 /
++C     DATA IMACH(11) /         24 /
++C     DATA IMACH(12) /       -126 /
++C     DATA IMACH(13) /        127 /
++C     DATA IMACH(14) /         53 /
++C     DATA IMACH(15) /      -1022 /
++C     DATA IMACH(16) /       1023 /
++C
++C     MACHINE CONSTANTS FOR THE CONVEX
++C     USING THE -fn COMPILER OPTION
++C
++C     DATA IMACH( 1) /          5 /
++C     DATA IMACH( 2) /          6 /
++C     DATA IMACH( 3) /          7 /
++C     DATA IMACH( 4) /          6 /
++C     DATA IMACH( 5) /         32 /
++C     DATA IMACH( 6) /          4 /
++C     DATA IMACH( 7) /          2 /
++C     DATA IMACH( 8) /         31 /
++C     DATA IMACH( 9) / 2147483647 /
++C     DATA IMACH(10) /          2 /
++C     DATA IMACH(11) /         24 /
++C     DATA IMACH(12) /       -127 /
++C     DATA IMACH(13) /        127 /
++C     DATA IMACH(14) /         53 /
++C     DATA IMACH(15) /      -1023 /
++C     DATA IMACH(16) /       1023 /
++C
++C     MACHINE CONSTANTS FOR THE CONVEX
++C     USING THE -fi COMPILER OPTION
++C
++C     DATA IMACH( 1) /          5 /
++C     DATA IMACH( 2) /          6 /
++C     DATA IMACH( 3) /          7 /
++C     DATA IMACH( 4) /          6 /
++C     DATA IMACH( 5) /         32 /
++C     DATA IMACH( 6) /          4 /
++C     DATA IMACH( 7) /          2 /
++C     DATA IMACH( 8) /         31 /
++C     DATA IMACH( 9) / 2147483647 /
++C     DATA IMACH(10) /          2 /
++C     DATA IMACH(11) /         24 /
++C     DATA IMACH(12) /       -125 /
++C     DATA IMACH(13) /        128 /
++C     DATA IMACH(14) /         53 /
++C     DATA IMACH(15) /      -1021 /
++C     DATA IMACH(16) /       1024 /
++C
++C     MACHINE CONSTANTS FOR THE CONVEX
++C     USING THE -p8 COMPILER OPTION
++C
++C     DATA IMACH( 1) /          5 /
++C     DATA IMACH( 2) /          6 /
++C     DATA IMACH( 3) /          7 /
++C     DATA IMACH( 4) /          6 /
++C     DATA IMACH( 5) /         64 /
++C     DATA IMACH( 6) /          4 /
++C     DATA IMACH( 7) /          2 /
++C     DATA IMACH( 8) /         63 /
++C     DATA IMACH( 9) / 9223372036854775807 /
++C     DATA IMACH(10) /          2 /
++C     DATA IMACH(11) /         53 /
++C     DATA IMACH(12) /      -1023 /
++C     DATA IMACH(13) /       1023 /
++C     DATA IMACH(14) /        113 /
++C     DATA IMACH(15) /     -16383 /
++C     DATA IMACH(16) /      16383 /
++C
++C     MACHINE CONSTANTS FOR THE CONVEX
++C     USING THE -pd8 COMPILER OPTION
++C
++C     DATA IMACH( 1) /          5 /
++C     DATA IMACH( 2) /          6 /
++C     DATA IMACH( 3) /          7 /
++C     DATA IMACH( 4) /          6 /
++C     DATA IMACH( 5) /         64 /
++C     DATA IMACH( 6) /          4 /
++C     DATA IMACH( 7) /          2 /
++C     DATA IMACH( 8) /         63 /
++C     DATA IMACH( 9) / 9223372036854775807 /
++C     DATA IMACH(10) /          2 /
++C     DATA IMACH(11) /         53 /
++C     DATA IMACH(12) /      -1023 /
++C     DATA IMACH(13) /       1023 /
++C     DATA IMACH(14) /         53 /
++C     DATA IMACH(15) /      -1023 /
++C     DATA IMACH(16) /       1023 /
++C
++C     MACHINE CONSTANTS FOR THE CRAY
++C     USING THE 46 BIT INTEGER COMPILER OPTION
++C
++C     DATA IMACH( 1) /        100 /
++C     DATA IMACH( 2) /        101 /
++C     DATA IMACH( 3) /        102 /
++C     DATA IMACH( 4) /        101 /
++C     DATA IMACH( 5) /         64 /
++C     DATA IMACH( 6) /          8 /
++C     DATA IMACH( 7) /          2 /
++C     DATA IMACH( 8) /         46 /
++C     DATA IMACH( 9) / 1777777777777777B /
++C     DATA IMACH(10) /          2 /
++C     DATA IMACH(11) /         47 /
++C     DATA IMACH(12) /      -8189 /
++C     DATA IMACH(13) /       8190 /
++C     DATA IMACH(14) /         94 /
++C     DATA IMACH(15) /      -8099 /
++C     DATA IMACH(16) /       8190 /
++C
++C     MACHINE CONSTANTS FOR THE CRAY
++C     USING THE 64 BIT INTEGER COMPILER OPTION
++C
++C     DATA IMACH( 1) /        100 /
++C     DATA IMACH( 2) /        101 /
++C     DATA IMACH( 3) /        102 /
++C     DATA IMACH( 4) /        101 /
++C     DATA IMACH( 5) /         64 /
++C     DATA IMACH( 6) /          8 /
++C     DATA IMACH( 7) /          2 /
++C     DATA IMACH( 8) /         63 /
++C     DATA IMACH( 9) / 777777777777777777777B /
++C     DATA IMACH(10) /          2 /
++C     DATA IMACH(11) /         47 /
++C     DATA IMACH(12) /      -8189 /
++C     DATA IMACH(13) /       8190 /
++C     DATA IMACH(14) /         94 /
++C     DATA IMACH(15) /      -8099 /
++C     DATA IMACH(16) /       8190 /
++C
++C     MACHINE CONSTANTS FOR THE DATA GENERAL ECLIPSE S/200
++C
++C     DATA IMACH( 1) /         11 /
++C     DATA IMACH( 2) /         12 /
++C     DATA IMACH( 3) /          8 /
++C     DATA IMACH( 4) /         10 /
++C     DATA IMACH( 5) /         16 /
++C     DATA IMACH( 6) /          2 /
++C     DATA IMACH( 7) /          2 /
++C     DATA IMACH( 8) /         15 /
++C     DATA IMACH( 9) /      32767 /
++C     DATA IMACH(10) /         16 /
++C     DATA IMACH(11) /          6 /
++C     DATA IMACH(12) /        -64 /
++C     DATA IMACH(13) /         63 /
++C     DATA IMACH(14) /         14 /
++C     DATA IMACH(15) /        -64 /
++C     DATA IMACH(16) /         63 /
++C
++C     MACHINE CONSTANTS FOR THE DEC ALPHA
++C     USING G_FLOAT
++C
++C     DATA IMACH( 1) /          5 /
++C     DATA IMACH( 2) /          6 /
++C     DATA IMACH( 3) /          5 /
++C     DATA IMACH( 4) /          6 /
++C     DATA IMACH( 5) /         32 /
++C     DATA IMACH( 6) /          4 /
++C     DATA IMACH( 7) /          2 /
++C     DATA IMACH( 8) /         31 /
++C     DATA IMACH( 9) / 2147483647 /
++C     DATA IMACH(10) /          2 /
++C     DATA IMACH(11) /         24 /
++C     DATA IMACH(12) /       -127 /
++C     DATA IMACH(13) /        127 /
++C     DATA IMACH(14) /         53 /
++C     DATA IMACH(15) /      -1023 /
++C     DATA IMACH(16) /       1023 /
++C
++C     MACHINE CONSTANTS FOR THE DEC ALPHA
++C     USING IEEE_FLOAT
++C
++C     DATA IMACH( 1) /          5 /
++C     DATA IMACH( 2) /          6 /
++C     DATA IMACH( 3) /          6 /
++C     DATA IMACH( 4) /          6 /
++C     DATA IMACH( 5) /         32 /
++C     DATA IMACH( 6) /          4 /
++C     DATA IMACH( 7) /          2 /
++C     DATA IMACH( 8) /         31 /
++C     DATA IMACH( 9) / 2147483647 /
++C     DATA IMACH(10) /          2 /
++C     DATA IMACH(11) /         24 /
++C     DATA IMACH(12) /       -125 /
++C     DATA IMACH(13) /        128 /
++C     DATA IMACH(14) /         53 /
++C     DATA IMACH(15) /      -1021 /
++C     DATA IMACH(16) /       1024 /
++C
++C     MACHINE CONSTANTS FOR THE DEC RISC
++C
++C     DATA IMACH( 1) /          5 /
++C     DATA IMACH( 2) /          6 /
++C     DATA IMACH( 3) /          6 /
++C     DATA IMACH( 4) /          6 /
++C     DATA IMACH( 5) /         32 /
++C     DATA IMACH( 6) /          4 /
++C     DATA IMACH( 7) /          2 /
++C     DATA IMACH( 8) /         31 /
++C     DATA IMACH( 9) / 2147483647 /
++C     DATA IMACH(10) /          2 /
++C     DATA IMACH(11) /         24 /
++C     DATA IMACH(12) /       -125 /
++C     DATA IMACH(13) /        128 /
++C     DATA IMACH(14) /         53 /
++C     DATA IMACH(15) /      -1021 /
++C     DATA IMACH(16) /       1024 /
++C
++C     MACHINE CONSTANTS FOR THE DEC VAX
++C     USING D_FLOATING
++C
++C     DATA IMACH( 1) /          5 /
++C     DATA IMACH( 2) /          6 /
++C     DATA IMACH( 3) /          5 /
++C     DATA IMACH( 4) /          6 /
++C     DATA IMACH( 5) /         32 /
++C     DATA IMACH( 6) /          4 /
++C     DATA IMACH( 7) /          2 /
++C     DATA IMACH( 8) /         31 /
++C     DATA IMACH( 9) / 2147483647 /
++C     DATA IMACH(10) /          2 /
++C     DATA IMACH(11) /         24 /
++C     DATA IMACH(12) /       -127 /
++C     DATA IMACH(13) /        127 /
++C     DATA IMACH(14) /         56 /
++C     DATA IMACH(15) /       -127 /
++C     DATA IMACH(16) /        127 /
++C
++C     MACHINE CONSTANTS FOR THE DEC VAX
++C     USING G_FLOATING
++C
++C     DATA IMACH( 1) /          5 /
++C     DATA IMACH( 2) /          6 /
++C     DATA IMACH( 3) /          5 /
++C     DATA IMACH( 4) /          6 /
++C     DATA IMACH( 5) /         32 /
++C     DATA IMACH( 6) /          4 /
++C     DATA IMACH( 7) /          2 /
++C     DATA IMACH( 8) /         31 /
++C     DATA IMACH( 9) / 2147483647 /
++C     DATA IMACH(10) /          2 /
++C     DATA IMACH(11) /         24 /
++C     DATA IMACH(12) /       -127 /
++C     DATA IMACH(13) /        127 /
++C     DATA IMACH(14) /         53 /
++C     DATA IMACH(15) /      -1023 /
++C     DATA IMACH(16) /       1023 /
++C
++C     MACHINE CONSTANTS FOR THE ELXSI 6400
++C
++C     DATA IMACH( 1) /          5 /
++C     DATA IMACH( 2) /          6 /
++C     DATA IMACH( 3) /          6 /
++C     DATA IMACH( 4) /          6 /
++C     DATA IMACH( 5) /         32 /
++C     DATA IMACH( 6) /          4 /
++C     DATA IMACH( 7) /          2 /
++C     DATA IMACH( 8) /         32 /
++C     DATA IMACH( 9) / 2147483647 /
++C     DATA IMACH(10) /          2 /
++C     DATA IMACH(11) /         24 /
++C     DATA IMACH(12) /       -126 /
++C     DATA IMACH(13) /        127 /
++C     DATA IMACH(14) /         53 /
++C     DATA IMACH(15) /      -1022 /
++C     DATA IMACH(16) /       1023 /
++C
++C     MACHINE CONSTANTS FOR THE HARRIS 220
++C
++C     DATA IMACH( 1) /          5 /
++C     DATA IMACH( 2) /          6 /
++C     DATA IMACH( 3) /          0 /
++C     DATA IMACH( 4) /          6 /
++C     DATA IMACH( 5) /         24 /
++C     DATA IMACH( 6) /          3 /
++C     DATA IMACH( 7) /          2 /
++C     DATA IMACH( 8) /         23 /
++C     DATA IMACH( 9) /    8388607 /
++C     DATA IMACH(10) /          2 /
++C     DATA IMACH(11) /         23 /
++C     DATA IMACH(12) /       -127 /
++C     DATA IMACH(13) /        127 /
++C     DATA IMACH(14) /         38 /
++C     DATA IMACH(15) /       -127 /
++C     DATA IMACH(16) /        127 /
++C
++C     MACHINE CONSTANTS FOR THE HONEYWELL 600/6000 SERIES
++C
++C     DATA IMACH( 1) /          5 /
++C     DATA IMACH( 2) /          6 /
++C     DATA IMACH( 3) /         43 /
++C     DATA IMACH( 4) /          6 /
++C     DATA IMACH( 5) /         36 /
++C     DATA IMACH( 6) /          6 /
++C     DATA IMACH( 7) /          2 /
++C     DATA IMACH( 8) /         35 /
++C     DATA IMACH( 9) / O377777777777 /
++C     DATA IMACH(10) /          2 /
++C     DATA IMACH(11) /         27 /
++C     DATA IMACH(12) /       -127 /
++C     DATA IMACH(13) /        127 /
++C     DATA IMACH(14) /         63 /
++C     DATA IMACH(15) /       -127 /
++C     DATA IMACH(16) /        127 /
++C
++C     MACHINE CONSTANTS FOR THE HP 730
++C
++C     DATA IMACH( 1) /          5 /
++C     DATA IMACH( 2) /          6 /
++C     DATA IMACH( 3) /          6 /
++C     DATA IMACH( 4) /          6 /
++C     DATA IMACH( 5) /         32 /
++C     DATA IMACH( 6) /          4 /
++C     DATA IMACH( 7) /          2 /
++C     DATA IMACH( 8) /         31 /
++C     DATA IMACH( 9) / 2147483647 /
++C     DATA IMACH(10) /          2 /
++C     DATA IMACH(11) /         24 /
++C     DATA IMACH(12) /       -125 /
++C     DATA IMACH(13) /        128 /
++C     DATA IMACH(14) /         53 /
++C     DATA IMACH(15) /      -1021 /
++C     DATA IMACH(16) /       1024 /
++C
++C     MACHINE CONSTANTS FOR THE HP 2100
++C     3 WORD DOUBLE PRECISION OPTION WITH FTN4
++C
++C     DATA IMACH( 1) /          5 /
++C     DATA IMACH( 2) /          6 /
++C     DATA IMACH( 3) /          4 /
++C     DATA IMACH( 4) /          1 /
++C     DATA IMACH( 5) /         16 /
++C     DATA IMACH( 6) /          2 /
++C     DATA IMACH( 7) /          2 /
++C     DATA IMACH( 8) /         15 /
++C     DATA IMACH( 9) /      32767 /
++C     DATA IMACH(10) /          2 /
++C     DATA IMACH(11) /         23 /
++C     DATA IMACH(12) /       -128 /
++C     DATA IMACH(13) /        127 /
++C     DATA IMACH(14) /         39 /
++C     DATA IMACH(15) /       -128 /
++C     DATA IMACH(16) /        127 /
++C
++C     MACHINE CONSTANTS FOR THE HP 2100
++C     4 WORD DOUBLE PRECISION OPTION WITH FTN4
++C
++C     DATA IMACH( 1) /          5 /
++C     DATA IMACH( 2) /          6 /
++C     DATA IMACH( 3) /          4 /
++C     DATA IMACH( 4) /          1 /
++C     DATA IMACH( 5) /         16 /
++C     DATA IMACH( 6) /          2 /
++C     DATA IMACH( 7) /          2 /
++C     DATA IMACH( 8) /         15 /
++C     DATA IMACH( 9) /      32767 /
++C     DATA IMACH(10) /          2 /
++C     DATA IMACH(11) /         23 /
++C     DATA IMACH(12) /       -128 /
++C     DATA IMACH(13) /        127 /
++C     DATA IMACH(14) /         55 /
++C     DATA IMACH(15) /       -128 /
++C     DATA IMACH(16) /        127 /
++C
++C     MACHINE CONSTANTS FOR THE HP 9000
++C
++C     DATA IMACH( 1) /          5 /
++C     DATA IMACH( 2) /          6 /
++C     DATA IMACH( 3) /          6 /
++C     DATA IMACH( 4) /          7 /
++C     DATA IMACH( 5) /         32 /
++C     DATA IMACH( 6) /          4 /
++C     DATA IMACH( 7) /          2 /
++C     DATA IMACH( 8) /         32 /
++C     DATA IMACH( 9) / 2147483647 /
++C     DATA IMACH(10) /          2 /
++C     DATA IMACH(11) /         24 /
++C     DATA IMACH(12) /       -126 /
++C     DATA IMACH(13) /        127 /
++C     DATA IMACH(14) /         53 /
++C     DATA IMACH(15) /      -1015 /
++C     DATA IMACH(16) /       1017 /
++C
++C     MACHINE CONSTANTS FOR THE IBM 360/370 SERIES,
++C     THE XEROX SIGMA 5/7/9, THE SEL SYSTEMS 85/86, AND
++C     THE PERKIN ELMER (INTERDATA) 7/32.
++C
++C     DATA IMACH( 1) /          5 /
++C     DATA IMACH( 2) /          6 /
++C     DATA IMACH( 3) /          7 /
++C     DATA IMACH( 4) /          6 /
++C     DATA IMACH( 5) /         32 /
++C     DATA IMACH( 6) /          4 /
++C     DATA IMACH( 7) /          2 /
++C     DATA IMACH( 8) /         31 /
++C     DATA IMACH( 9) /  Z7FFFFFFF /
++C     DATA IMACH(10) /         16 /
++C     DATA IMACH(11) /          6 /
++C     DATA IMACH(12) /        -64 /
++C     DATA IMACH(13) /         63 /
++C     DATA IMACH(14) /         14 /
++C     DATA IMACH(15) /        -64 /
++C     DATA IMACH(16) /         63 /
++C
++C     MACHINE CONSTANTS FOR THE IBM PC
++C
++      DATA IMACH( 1) /          5 /
++      DATA IMACH( 2) /          6 /
++      DATA IMACH( 3) /          0 /
++      DATA IMACH( 4) /          0 /
++      DATA IMACH( 5) /         32 /
++      DATA IMACH( 6) /          4 /
++      DATA IMACH( 7) /          2 /
++      DATA IMACH( 8) /         31 /
++      DATA IMACH( 9) / 2147483647 /
++      DATA IMACH(10) /          2 /
++      DATA IMACH(11) /         24 /
++      DATA IMACH(12) /       -125 /
++      DATA IMACH(13) /        127 /
++      DATA IMACH(14) /         53 /
++      DATA IMACH(15) /      -1021 /
++      DATA IMACH(16) /       1023 /
++C
++C     MACHINE CONSTANTS FOR THE IBM RS 6000
++C
++C     DATA IMACH( 1) /          5 /
++C     DATA IMACH( 2) /          6 /
++C     DATA IMACH( 3) /          6 /
++C     DATA IMACH( 4) /          0 /
++C     DATA IMACH( 5) /         32 /
++C     DATA IMACH( 6) /          4 /
++C     DATA IMACH( 7) /          2 /
++C     DATA IMACH( 8) /         31 /
++C     DATA IMACH( 9) / 2147483647 /
++C     DATA IMACH(10) /          2 /
++C     DATA IMACH(11) /         24 /
++C     DATA IMACH(12) /       -125 /
++C     DATA IMACH(13) /        128 /
++C     DATA IMACH(14) /         53 /
++C     DATA IMACH(15) /      -1021 /
++C     DATA IMACH(16) /       1024 /
++C
++C     MACHINE CONSTANTS FOR THE INTEL i860
++C
++C     DATA IMACH( 1) /          5 /
++C     DATA IMACH( 2) /          6 /
++C     DATA IMACH( 3) /          6 /
++C     DATA IMACH( 4) /          6 /
++C     DATA IMACH( 5) /         32 /
++C     DATA IMACH( 6) /          4 /
++C     DATA IMACH( 7) /          2 /
++C     DATA IMACH( 8) /         31 /
++C     DATA IMACH( 9) / 2147483647 /
++C     DATA IMACH(10) /          2 /
++C     DATA IMACH(11) /         24 /
++C     DATA IMACH(12) /       -125 /
++C     DATA IMACH(13) /        128 /
++C     DATA IMACH(14) /         53 /
++C     DATA IMACH(15) /      -1021 /
++C     DATA IMACH(16) /       1024 /
++C
++C     MACHINE CONSTANTS FOR THE PDP-10 (KA PROCESSOR)
++C
++C     DATA IMACH( 1) /          5 /
++C     DATA IMACH( 2) /          6 /
++C     DATA IMACH( 3) /          5 /
++C     DATA IMACH( 4) /          6 /
++C     DATA IMACH( 5) /         36 /
++C     DATA IMACH( 6) /          5 /
++C     DATA IMACH( 7) /          2 /
++C     DATA IMACH( 8) /         35 /
++C     DATA IMACH( 9) / "377777777777 /
++C     DATA IMACH(10) /          2 /
++C     DATA IMACH(11) /         27 /
++C     DATA IMACH(12) /       -128 /
++C     DATA IMACH(13) /        127 /
++C     DATA IMACH(14) /         54 /
++C     DATA IMACH(15) /       -101 /
++C     DATA IMACH(16) /        127 /
++C
++C     MACHINE CONSTANTS FOR THE PDP-10 (KI PROCESSOR)
++C
++C     DATA IMACH( 1) /          5 /
++C     DATA IMACH( 2) /          6 /
++C     DATA IMACH( 3) /          5 /
++C     DATA IMACH( 4) /          6 /
++C     DATA IMACH( 5) /         36 /
++C     DATA IMACH( 6) /          5 /
++C     DATA IMACH( 7) /          2 /
++C     DATA IMACH( 8) /         35 /
++C     DATA IMACH( 9) / "377777777777 /
++C     DATA IMACH(10) /          2 /
++C     DATA IMACH(11) /         27 /
++C     DATA IMACH(12) /       -128 /
++C     DATA IMACH(13) /        127 /
++C     DATA IMACH(14) /         62 /
++C     DATA IMACH(15) /       -128 /
++C     DATA IMACH(16) /        127 /
++C
++C     MACHINE CONSTANTS FOR PDP-11 FORTRAN SUPPORTING
++C     32-BIT INTEGER ARITHMETIC.
++C
++C     DATA IMACH( 1) /          5 /
++C     DATA IMACH( 2) /          6 /
++C     DATA IMACH( 3) /          5 /
++C     DATA IMACH( 4) /          6 /
++C     DATA IMACH( 5) /         32 /
++C     DATA IMACH( 6) /          4 /
++C     DATA IMACH( 7) /          2 /
++C     DATA IMACH( 8) /         31 /
++C     DATA IMACH( 9) / 2147483647 /
++C     DATA IMACH(10) /          2 /
++C     DATA IMACH(11) /         24 /
++C     DATA IMACH(12) /       -127 /
++C     DATA IMACH(13) /        127 /
++C     DATA IMACH(14) /         56 /
++C     DATA IMACH(15) /       -127 /
++C     DATA IMACH(16) /        127 /
++C
++C     MACHINE CONSTANTS FOR PDP-11 FORTRAN SUPPORTING
++C     16-BIT INTEGER ARITHMETIC.
++C
++C     DATA IMACH( 1) /          5 /
++C     DATA IMACH( 2) /          6 /
++C     DATA IMACH( 3) /          5 /
++C     DATA IMACH( 4) /          6 /
++C     DATA IMACH( 5) /         16 /
++C     DATA IMACH( 6) /          2 /
++C     DATA IMACH( 7) /          2 /
++C     DATA IMACH( 8) /         15 /
++C     DATA IMACH( 9) /      32767 /
++C     DATA IMACH(10) /          2 /
++C     DATA IMACH(11) /         24 /
++C     DATA IMACH(12) /       -127 /
++C     DATA IMACH(13) /        127 /
++C     DATA IMACH(14) /         56 /
++C     DATA IMACH(15) /       -127 /
++C     DATA IMACH(16) /        127 /
++C
++C     MACHINE CONSTANTS FOR THE SILICON GRAPHICS
++C
++C     DATA IMACH( 1) /          5 /
++C     DATA IMACH( 2) /          6 /
++C     DATA IMACH( 3) /          6 /
++C     DATA IMACH( 4) /          6 /
++C     DATA IMACH( 5) /         32 /
++C     DATA IMACH( 6) /          4 /
++C     DATA IMACH( 7) /          2 /
++C     DATA IMACH( 8) /         31 /
++C     DATA IMACH( 9) / 2147483647 /
++C     DATA IMACH(10) /          2 /
++C     DATA IMACH(11) /         24 /
++C     DATA IMACH(12) /       -125 /
++C     DATA IMACH(13) /        128 /
++C     DATA IMACH(14) /         53 /
++C     DATA IMACH(15) /      -1021 /
++C     DATA IMACH(16) /       1024 /
++C
++C     MACHINE CONSTANTS FOR THE SUN
++C
++C     DATA IMACH( 1) /          5 /
++C     DATA IMACH( 2) /          6 /
++C     DATA IMACH( 3) /          6 /
++C     DATA IMACH( 4) /          6 /
++C     DATA IMACH( 5) /         32 /
++C     DATA IMACH( 6) /          4 /
++C     DATA IMACH( 7) /          2 /
++C     DATA IMACH( 8) /         31 /
++C     DATA IMACH( 9) / 2147483647 /
++C     DATA IMACH(10) /          2 /
++C     DATA IMACH(11) /         24 /
++C     DATA IMACH(12) /       -125 /
++C     DATA IMACH(13) /        128 /
++C     DATA IMACH(14) /         53 /
++C     DATA IMACH(15) /      -1021 /
++C     DATA IMACH(16) /       1024 /
++C
++C     MACHINE CONSTANTS FOR THE SUN
++C     USING THE -r8 COMPILER OPTION
++C
++C     DATA IMACH( 1) /          5 /
++C     DATA IMACH( 2) /          6 /
++C     DATA IMACH( 3) /          6 /
++C     DATA IMACH( 4) /          6 /
++C     DATA IMACH( 5) /         32 /
++C     DATA IMACH( 6) /          4 /
++C     DATA IMACH( 7) /          2 /
++C     DATA IMACH( 8) /         31 /
++C     DATA IMACH( 9) / 2147483647 /
++C     DATA IMACH(10) /          2 /
++C     DATA IMACH(11) /         53 /
++C     DATA IMACH(12) /      -1021 /
++C     DATA IMACH(13) /       1024 /
++C     DATA IMACH(14) /        113 /
++C     DATA IMACH(15) /     -16381 /
++C     DATA IMACH(16) /      16384 /
++C
++C     MACHINE CONSTANTS FOR THE UNIVAC 1100 SERIES FTN COMPILER
++C
++C     DATA IMACH( 1) /          5 /
++C     DATA IMACH( 2) /          6 /
++C     DATA IMACH( 3) /          1 /
++C     DATA IMACH( 4) /          6 /
++C     DATA IMACH( 5) /         36 /
++C     DATA IMACH( 6) /          4 /
++C     DATA IMACH( 7) /          2 /
++C     DATA IMACH( 8) /         35 /
++C     DATA IMACH( 9) / O377777777777 /
++C     DATA IMACH(10) /          2 /
++C     DATA IMACH(11) /         27 /
++C     DATA IMACH(12) /       -128 /
++C     DATA IMACH(13) /        127 /
++C     DATA IMACH(14) /         60 /
++C     DATA IMACH(15) /      -1024 /
++C     DATA IMACH(16) /       1023 /
++C
++C     MACHINE CONSTANTS FOR THE Z80 MICROPROCESSOR
++C
++C     DATA IMACH( 1) /          1 /
++C     DATA IMACH( 2) /          1 /
++C     DATA IMACH( 3) /          0 /
++C     DATA IMACH( 4) /          1 /
++C     DATA IMACH( 5) /         16 /
++C     DATA IMACH( 6) /          2 /
++C     DATA IMACH( 7) /          2 /
++C     DATA IMACH( 8) /         15 /
++C     DATA IMACH( 9) /      32767 /
++C     DATA IMACH(10) /          2 /
++C     DATA IMACH(11) /         24 /
++C     DATA IMACH(12) /       -127 /
++C     DATA IMACH(13) /        127 /
++C     DATA IMACH(14) /         56 /
++C     DATA IMACH(15) /       -127 /
++C     DATA IMACH(16) /        127 /
++C
++C***FIRST EXECUTABLE STATEMENT  I1MACH
++      IF (I .LT. 1  .OR.  I .GT. 16) GO TO 10
++C
++      I1MACH = IMACH(I)
++      RETURN
++C
++   10 CONTINUE
++      WRITE (UNIT = OUTPUT, FMT = 9000)
++ 9000 FORMAT ('1ERROR    1 IN I1MACH - I OUT OF BOUNDS')
++C
++C     CALL FDUMP
++C
++      STOP
++      END
+diff -ruN clean/makedoc.sed mod/makedoc.sed
+--- clean/makedoc.sed	1970-01-01 09:00:00.000000000 +0900
++++ mod/makedoc.sed	2000-07-11 05:58:56.000000000 +0900
+@@ -0,0 +1,80 @@
++# By Giuseppe Borzi' - my first sed scriptfile
++# cancels lines after the proglogue
++1,/END\ PROLOGUE/!d
++1,/END\ PROLOGUE/{
++# defines and print the title
++/^\*DECK/{
++s/^\*DECK *\(.*\)/.TH \1 1/
++p
++s/.*/.SH SYNOPSIS/
++}
++s/^ *//
++# The hell !
++/^C\*\*\*BEGIN PROLOGUE/{
++# convert to lowercase for use in NAME
++y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/
++# append next line
++N
++s/^c\*\*\*begin prologue *\([a-z0-9]*\)\nC\*\*\*PURPOSE *\(.*\)/\1 \\- \2/
++t nosubsidiary
++s/\nC\*\*\*SUBSIDIARY//
++N
++s/^c\*\*\*begin prologue *\([a-z0-9]*\)\nC\*\*\*PURPOSE *\(.*\)/\1 \\- \2/
++:nosubsidiary
++h
++# print NAME heading
++s/.*/.SH NAME/
++p
++# retrieve original line from hold space and rewrite
++x
++}
++# cancels END PROLOGUE
++s/^C\*\*\*END PROLOGUE.*//
++# change each C*** to a roff section heading
++s/^C\*\*\*/.SH /
++# builds headings formed by two or more words
++/\.SH ROUTINES CALLED/{
++h
++s/\(\.SH ROUTINES CALLED\).*/\1/
++p
++x
++s/\.SH ROUTINES CALLED *\(.*\)/\1/
++}
++/\.SH REVISION HISTORY  (YYMMDD)/{
++h
++s/\(\.SH REVISION HISTORY  (YYMMDD)\).*/\1/
++p
++s/\(\.SH REVISION HISTORY  (YYMMDD)\).*/.PD 0/
++p
++x
++s/\.SH REVISION HISTORY  (YYMMDD) *\(.*\)/\1/
++}
++/\.SH COMMON BLOCKS/{
++h
++s/\(\.SH COMMON BLOCKS\).*/\1/
++p
++x
++s/\.SH COMMON BLOCKS *\(.*\)/\1/
++}
++/\.SH SEE ALSO/{
++h
++s/\(\.SH SEE ALSO\).*/\1/
++p
++x
++s/\.SH SEE ALSO *\(.*\)/\1/
++}
++# builds headings formed by one word
++/\.SH/{
++h
++s/\(\.SH *[A-Z]*\).*/\1/
++p
++x
++s/\.SH *[A-Z]* *\(.*\)/\1/
++}
++# strip initial C and eventually spaces
++s/^C  *//
++s/^C$//
++# this is Y2K compliant !
++/[0789][0-9][01][0-9][0-3][0-9]/i\
++.P
++}
+diff -ruN clean/makefile mod/makefile
+--- clean/makefile	1970-01-01 09:00:00.000000000 +0900
++++ mod/makefile	2017-11-20 22:34:06.638281824 +0900
+@@ -0,0 +1,253 @@
++MAN = \
++aaaaaa.1 cnbdi.1  dcv.1    dqc25f.1 hpperm.1 qc25s.1      spoco.1 \
++acosh.1  cnbfa.1  ddaini.1 dqc25s.1 hpsort.1 qcheb.1      spodi.1 \
++ai.1     cnbfs.1  ddajac.1 dqcheb.1 hqr.1    qelg.1       spofa.1 \
++aie.1    cnbir.1  ddanrm.1 dqdota.1 hqr2.1   qform.1      spofs.1 \
++albeta.1 cnbsl.1  ddaslv.1 dqdoti.1 hstart.1 qk15.1       spoir.1 \
++algams.1 combak.1 ddassl.1 dqelg.1  hstcrt.1 qk15i.1      spopt.1 \
++ali.1    comhes.1 ddastp.1 dqform.1 hstcs1.1 qk15w.1      sposl.1 \
++alngam.1 comlr.1  ddatrp.1 dqk15.1  hstcsp.1 qk21.1       sppco.1 \
++alnrel.1 comlr2.1 ddaws.1  dqk15i.1 hstcyl.1 qk31.1       sppdi.1 \
++asinh.1  compb.1  ddawts.1 dqk15w.1 hstplr.1 qk41.1       spperm.1 \
++asyik.1  comqr.1  ddcor.1  dqk21.1  hstssp.1 qk51.1       sppfa.1 \
++asyjy.1  comqr2.1 ddcst.1  dqk31.1  htrib3.1 qk61.1       sppsl.1 \
++atanh.1  cortb.1  ddeabm.1 dqk41.1  htribk.1 qmomo.1      spsort.1 \
++avint.1  corth.1  ddebdf.1 dqk51.1  htrid3.1 qnc79.1      sptsl.1 \
++bakvec.1 cosdg.1  dderkf.1 dqk61.1  htridi.1 qng.1        sqrdc.1 \
++balanc.1 cosgen.1 ddes.1   dqmomo.1 hvnrm.1  qpdoc.1      sqrsl.1 \
++balbak.1 cosqb.1  ddntl.1  dqnc79.1 hw3crt.1 qpsrt.1      sreadp.1 \
++bandr.1  cosqb1.1 ddntp.1  dqng.1   hwscrt.1 qrfac.1      srlcal.1 \
++bandv.1  cosqf.1  ddoglg.1 dqpsrt.1 hwscs1.1 qrsolv.1     srot.1 \
++bcrh.1   cosqf1.1 ddot.1   dqrdc.1  hwscsp.1 qs2i1d.1     srotg.1 \
++bdiff.1  cosqi.1  ddpsc.1  dqrfac.1 hwscyl.1 qs2i1r.1     srotm.1 \
++besi.1   cost.1   ddpst.1  dqrsl.1  hwsplr.1 qwgtc.1      srotmg.1 \
++besi0.1  costi.1  ddriv1.1 dqrslv.1 hwsss1.1 qwgtf.1      ss2lt.1 \
++besi0e.1 cot.1    ddriv2.1 dqwgtc.1 hwsssp.1 qwgts.1      ss2y.1 \
++besi1.1  cpadd.1  ddriv3.1 dqwgtf.1 i1mach.1 qzhes.1      ssbmv.1 \
++besi1e.1 cpbco.1  ddscl.1  dqwgts.1 i1merg.1 qzit.1       sscal.1 \
++besj.1   cpbdi.1  ddstp.1  drc.1    icamax.1 qzval.1      ssd2s.1 \
++besj0.1  cpbfa.1  ddzro.1  drc3jj.1 icopy.1  qzvec.1      ssdbcg.1 \
++besj1.1  cpbsl.1  de1.1    drc3jm.1 idamax.1 r1mach.1     ssdcg.1 \
++besk.1   cpevl.1  deabm.1  drc6j.1  idloc.1  r1mpyq.1     ssdcgn.1 \
++besk0.1  cpevlr.1 debdf.1  drd.1    imtql1.1 r1updt.1     ssdcgs.1 \
++besk0e.1 cpoco.1  defc.1   dreadp.1 imtql2.1 r9aimp.1     ssdgmr.1 \
++besk1.1  cpodi.1  defcmn.1 dreort.1 imtqlv.1 r9atn1.1     ssdi.1 \
++besk1e.1 cpofa.1  defe4.1  drf.1    indxa.1  r9chu.1      ssdomn.1 \
++beskes.1 cpofs.1  defehl.1 drj.1    indxb.1  r9gmic.1     ssds.1 \
++besknu.1 cpoir.1  defer.1  indxc.1  r9gmit.1     ssdscl.1 \
++besks.1  cposl.1  dei.1    drkfs.1  initds.1 r9knus.1     ssgs.1 \
++besy.1   cppco.1  denorm.1 drlcal.1 inits.1  r9lgic.1     ssiccg.1 \
++besy0.1  cppdi.1  derf.1   drot.1   intrv.1  r9lgit.1     ssico.1 \
++besy1.1  cppfa.1  derfc.1  drotg.1  intyd.1  r9lgmc.1     ssics.1 \
++besynu.1 cppsl.1  derkf.1  drotm.1  invit.1  r9ln2r.1     ssidi.1 \
++beta.1   cpqr79.1 derkfs.1 drotmg.1 inxca.1  r9pak.1      ssiev.1 \
++betai.1  cproc.1  des.1    drsco.1  inxcb.1  r9upak.1     ssifa.1 \
++bfqad.1  cprocp.1 ds2lt.1  inxcc.1  radb2.1      ssilur.1 \
++bi.1     cprod.1  dexint.1 ds2y.1   iploc.1  radb3.1      ssilus.1 \
++bie.1    cprodp.1 dexprl.1 dsbmv.1  ipperm.1 radb4.1      ssisl.1 \
++binom.1  cpsi.1   dfac.1   dscal.1  ipsort.1 radb5.1      ssjac.1 \
++bint4.1  cptsl.1  dfc.1    dsd2s.1  isamax.1 radbg.1      ssli.1 \
++bintk.1  cpzero.1 dfcmn.1  dsdbcg.1 isdbcg.1 radf2.1      ssli2.1 \
++bisect.1 cqrdc.1  dfdjc1.1 dsdcg.1  isdcg.1  radf3.1      ssllti.1 \
++bkias.1  cqrsl.1  dfdjc3.1 dsdcgn.1 isdcgn.1 radf4.1      sslubc.1 \
++bkisr.1  crati.1  dfehl.1  dsdcgs.1 isdcgs.1 radf5.1      sslucn.1 \
++bksol.1  crotg.1  dfspvd.1 dsdgmr.1 isdgmr.1 radfg.1      sslucs.1 \
++blktr1.1 cs1s2.1  dfspvn.1 dsdi.1   isdir.1  rand.1       sslugm.1 \
++blktri.1 cscal.1  dfulmt.1 dsdomn.1 isdomn.1 ratqr.1      sslui.1 \
++bndacc.1 cscale.1 dfzero.1 dsdot.1  isort.1  rc.1         sslui2.1 \
++bndsol.1 cseri.1  dgami.1  dsds.1   issbcg.1 rc3jj.1      sslui4.1 \
++bnfac.1  csevl.1  dgamic.1 dsdscl.1 isscg.1  rc3jm.1      ssluom.1 \
++bnslv.1  cshch.1  dgamit.1 dsgs.1   isscgn.1 rc6j.1       ssluti.1 \
++bqr.1    csico.1  dgamlm.1 dsiccg.1 isscgs.1 rd.1         ssmmi2.1 \
++bsgq8.1  csidi.1  dgamln.1 dsico.1  issgmr.1 rebak.1      ssmmti.1 \
++bskin.1  csifa.1  dgamma.1 dsics.1  issir.1  rebakb.1     ssmtv.1 \
++bspdoc.1 csinh.1  dgamr.1  dsidi.1  issomn.1 reduc.1      ssmv.1 \
++bspdr.1  csisl.1  dgamrn.1 dsifa.1  iswap.1  reduc2.1     ssort.1 \
++bspev.1  cspco.1  dgaus8.1 dsilur.1 ivout.1  reort.1      sspco.1 \
++bsplvd.1 cspdi.1  dgbco.1  dsilus.1 j4save.1 rf.1         sspdi.1 \
++bsplvn.1 cspfa.1  dgbdi.1  dsindg.1 jairy.1  rfftb.1      sspev.1 \
++bsppp.1  cspsl.1  dgbfa.1  dsisl.1  la05ad.1 rfftb1.1     sspfa.1 \
++bspvd.1  csroot.1 dgbmv.1  dsjac.1  la05as.1 rfftf.1      sspmv.1 \
++bspvn.1  csrot.1  dgbsl.1  dsli.1   la05bd.1 rfftf1.1     sspr.1 \
++bsqad.1  csscal.1 dgeco.1  dsli2.1  la05bs.1 rffti.1      sspr2.1 \
++bsrh.1   csvdc.1  dgedi.1  dsllti.1 la05cd.1 rffti1.1     sspsl.1 \
++bvalu.1  cswap.1  dgefa.1  dslubc.1 la05cs.1 rg.1         ssvdc.1 \
++csymm.1  dgefs.1  dslucn.1 la05ed.1 rgauss.1     sswap.1 \
++csyr2k.1 dgemm.1  dslucs.1 la05es.1 rgg.1        ssymm.1 \
++csyrk.1  dgemv.1  dslugm.1 llsia.1  rj.1         ssymv.1 \
++c0lgmc.1 ctan.1   dger.1   dslui.1  lmpar.1  ssyr.1 \
++c1merg.1 ctanh.1  dgesl.1  dslui2.1 lpdp.1   rpqr79.1     ssyr2.1 \
++c9lgmc.1 ctbmv.1  dglss.1  dslui4.1 lsame.1  rpzero.1     ssyr2k.1 \
++c9ln2r.1 ctbsv.1  dgmres.1 dsluom.1 lsei.1   rs.1         ssyrk.1 \
++cacai.1  ctpmv.1  dgtsl.1  dsluti.1 lsi.1    rsb.1        stbmv.1 \
++cacon.1  ctpsv.1  dh12.1   dslvs.1  lsod.1   rsco.1       stbsv.1 \
++cacos.1  ctrco.1  dhels.1  dsmmi2.1 lssods.1 rsg.1        steps.1 \
++cacosh.1 ctrdi.1  dheqr.1  dsmmti.1 lssuds.1 rsgab.1      stin.1 \
++cairy.1  ctrmm.1  dhfti.1  dsmtv.1  macon.1  rsgba.1      stod.1 \
++carg.1   ctrmv.1  dhkseq.1 dsmv.1   rsp.1        stor1.1 \
++casin.1  ctrsl.1  dhstrt.1 dsort.1  mc20ad.1 rst.1        stout.1 \
++casinh.1 ctrsm.1  dhvnrm.1 dsos.1   mc20as.1 rt.1         stpmv.1 \
++casyi.1  ctrsv.1  dintp.1  dsoseq.1 mgsbv.1  runif.1      stpsv.1 \
++catan.1  cuchk.1  dintrv.1 dsossl.1 minfit.1 rwupdt.1     strco.1 \
++catan2.1 cunhj.1  dintyd.1 dspco.1  minso4.1 s1merg.1     strdi.1 \
++catanh.1 cuni1.1  dir.1    dspdi.1  minsol.1 sasum.1      strmm.1 \
++caxpy.1  cuni2.1  djairy.1 dspenc.1 mpadd.1  saxpy.1      strmv.1 \
++cbabk2.1 cunik.1  dlbeta.1 dspfa.1  mpadd2.1 sbcg.1       strsl.1 \
++cbal.1   cunk1.1  dlgams.1 dsplp.1  mpadd3.1 sbhin.1      strsm.1 \
++cbesh.1  cunk2.1  dli.1    dspmv.1  mpblas.1 sbocls.1     strsv.1 \
++cbesi.1  cuoik.1  dllsia.1 dspr.1   mpcdm.1  sbols.1      stway.1 \
++cbesj.1  cv.1     dllti2.1 dspr2.1  mpchk.1  sbolsm.1     suds.1 \
++cbesk.1  cwrsk.1  dlngam.1 dspsl.1  mpcmd.1  scasum.1     svco.1 \
++cbesy.1  d1mach.1 dlnrel.1 dsteps.1 mpdivi.1 scg.1        svd.1 \
++cbeta.1  d1merg.1 dlpdoc.1 dstod.1  mperr.1  scgn.1       svecs.1 \
++cbinu.1  d1mpyq.1 dlpdp.1  dstor1.1 mpmaxr.1 scgs.1       svout.1 \
++cbiry.1  d1updt.1 dlsei.1  dstway.1 mpmlp.1  schdc.1      swritp.1 \
++cbknu.1  d9aimp.1 dlsi.1   dsuds.1  mpmul.1  schdd.1      sxlcal.1 \
++cblkt1.1 d9atn1.1 dlsod.1  dsvco.1  mpmul2.1 schex.1      tevlc.1 \
++cblktr.1 d9b0mp.1 dlssud.1 dsvdc.1  mpmuli.1 schkw.1      tevls.1 \
++cbrt.1   d9b1mp.1 dmacon.1 dswap.1  mpnzr.1  schud.1      tinvit.1 \
++cbuni.1  d9chu.1  dmgsbv.1 dsymm.1  mpovfl.1 sclosm.1     tql1.1 \
++cbunk.1  d9gmic.1 dmout.1  dsymv.1  mpstr.1  scnrm2.1     tql2.1 \
++ccbrt.1  d9gmit.1 dmpar.1  dsyr.1   mpunfl.1 scoef.1      tqlrat.1 \
++cchdc.1  d9knus.1 dnbco.1  dsyr2.1  numxer.1 scopy.1      trbak1.1 \
++cchdd.1  d9lgic.1 dnbdi.1  dsyr2k.1 ohtrol.1 scopym.1     trbak3.1 \
++cchex.1  d9lgit.1 dnbfa.1  dsyrk.1  ohtror.1 scov.1       tred1.1 \
++cchud.1  d9lgmc.1 dnbfs.1  dtbmv.1  ortbak.1 scpplt.1     tred2.1 \
++ccmpb.1  d9ln2r.1 dnbsl.1  dtbsv.1  orthes.1 sdaini.1     tred3.1 \
++ccopy.1  d9pak.1  dnls1.1  dtin.1   ortho4.1 sdajac.1     tri3.1 \
++ccosh.1  d9upak.1 dnls1e.1 dtout.1  orthog.1 sdanrm.1     tridib.1 \
++ccot.1   dacosh.1 dnrm2.1  dtpmv.1  orthol.1 sdaslv.1     tridq.1 \
++cdcdot.1 dai.1    dnsq.1   dtpsv.1  orthor.1 sdassl.1     tris4.1 \
++cdcor.1  daie.1   dnsqe.1  dtrco.1  ortran.1 sdastp.1     trisp.1 \
++cdcst.1  dasinh.1 dogleg.1 dtrdi.1  passb.1  sdatrp.1     trix.1 \
++cdiv.1   dasum.1  dohtrl.1 dtrmm.1  passb2.1 sdawts.1     tsturm.1 \
++cdntl.1  dasyik.1 domn.1   dtrmv.1  passb3.1 sdcor.1      u11ls.1 \
++cdntp.1  dasyjy.1 dorth.1  dtrsl.1  passb4.1 sdcst.1      u11us.1 \
++cdotc.1  datanh.1 dorthr.1 dtrsm.1  passb5.1 sdntl.1      u12ls.1 \
++cdotu.1  davint.1 dp1vlu.1 dtrsv.1  passf.1  sdntp.1      u12us.1 \
++cdpsc.1  daws.1   dpbco.1  du11ls.1 passf2.1 sdot.1       ulsia.1 \
++cdpst.1  daxpy.1  dpbdi.1  du11us.1 passf3.1 sdpsc.1      usrmat.1 \
++cdriv1.1 dbcg.1   dpbfa.1  du12ls.1 passf4.1 sdpst.1      vnwrms.1 \
++cdriv2.1 dbdiff.1 dpbsl.1  du12us.1 passf5.1 sdriv1.1     wnlit.1 \
++cdriv3.1 dbesi.1  dpchbs.1 dulsia.1 pchbs.1  sdriv2.1     wnlsm.1 \
++cdscl.1  dbesi0.1 dpchce.1 dusrmt.1 pchce.1  sdriv3.1     wnlt1.1 \
++cdstp.1  dbesi1.1 dpchci.1 dvecs.1  pchci.1  sdscl.1      wnlt2.1 \
++cdzro.1  dbesj.1  dpchcm.1 dvnrms.1 pchcm.1  sdsdot.1     wnlt3.1 \
++cexprl.1 dbesj0.1 dpchcs.1 dvout.1  pchcs.1  sdstp.1      wnnls.1 \
++cfftb.1  dbesj1.1 dpchdf.1 dwnlit.1 pchdf.1  sdzro.1      xadd.1 \
++cfftb1.1 dbesk.1  dpchfd.1 dwnlsm.1 pchdoc.1 sepeli.1     xadj.1 \
++cfftf.1  dbesk0.1 dpchfe.1 dwnlt1.1 pchfd.1  sepx4.1      xc210.1 \
++cfftf1.1 dbesk1.1 dpchia.1 dwnlt2.1 pchfe.1  sgbco.1      xcon.1 \
++cffti.1  dbesks.1 dpchic.1 dwnlt3.1 pchia.1  sgbdi.1      xerbla.1 \
++cffti1.1 dbesy.1  dpchid.1 dwnnls.1 pchic.1  sgbfa.1      xerclr.1 \
++cfod.1   dbesy0.1 dpchim.1 dwritp.1 pchid.1  sgbmv.1      xercnt.1 \
++cg.1     dbesy1.1 dpchkt.1 dwupdt.1 pchim.1  sgbsl.1      xerdmp.1 \
++cgamma.1 dbeta.1  dpchng.1 dx.1     pchkt.1  sgeco.1      xerhlt.1 \
++cgamr.1  dbetai.1 dpchsp.1 dx4.1    pchngs.1 sgedi.1      xermax.1 \
++cgbco.1  dbfqad.1 dpchst.1 dxadd.1  pchsp.1  sgeev.1      xermsg.1 \
++cgbdi.1  dbhin.1  dpchsw.1 dxadj.1  pchst.1  sgefa.1      xerprn.1 \
++cgbfa.1  dbi.1    dpcoef.1 dxc210.1 pchsw.1  sgefs.1      xersve.1 \
++cgbmv.1  dbie.1   dpfqad.1 dxcon.1  pcoef.1  sgeir.1      xgetf.1 \
++cgbsl.1  dbinom.1 dpigmr.1 dxlcal.1 pfqad.1  sgemm.1      xgetua.1 \
++cgeco.1  dbint4.1 dpincw.1 dxlegf.1 pgsf.1   sgemv.1      xgetun.1 \
++cgedi.1  dbintk.1 dpinit.1 dxnrmp.1 pimach.1 sger.1       xlegf.1 \
++cgeev.1  dbkias.1 dpintm.1 dxpmu.1  pinitm.1 sgesl.1      xnrmp.1 \
++cgefa.1  dbkisr.1 dpjac.1  dxpmup.1 pjac.1   sglss.1      xpmu.1 \
++cgefs.1  dbksol.1 dplint.1 dxpnrm.1 pnnzrs.1 sgmres.1     xpmup.1 \
++cgeir.1  dbndac.1 dplpce.1 dxpqnu.1 poch.1   sgtsl.1      xpnrm.1 \
++cgemm.1  dbndsl.1 dplpdm.1 dxpsi.1  poch1.1  shels.1      xpqnu.1 \
++cgemv.1  dbnfac.1 dplpfe.1 dxqmu.1  pois3d.1 sheqr.1      xpsi.1 \
++cgerc.1  dbnslv.1 dplpfl.1 dxqnu.1  poisd2.1 sindg.1      xqmu.1 \
++cgeru.1  dbocls.1 dplpmn.1 dxred.1  poisn2.1 sinqb.1      xqnu.1 \
++cgesl.1  dbols.1  dplpmu.1 dxset.1  poisp2.1 sinqf.1      xred.1 \
++cgtsl.1  dbolsm.1 dplpup.1 dy.1     poistg.1 sinqi.1      xset.1 \
++ch.1     dbsgq8.1 dpnnzr.1 dy4.1    polcof.1 sint.1       xsetf.1 \
++chbmv.1  dbsi0e.1 dpoch.1  dyairy.1 polfit.1 sinti.1      xsetua.1 \
++chemm.1  dbsi1e.1 dpoch1.1 e1.1     polint.1 sintrp.1     xsetun.1 \
++chemv.1  dbsk0e.1 dpoco.1  efc.1    polyvl.1 sir.1        yairy.1 \
++cher.1   dbsk1e.1 dpodi.1  efcmn.1  pos3d1.1 zabs.1 \
++cher2.1  dbskes.1 dpofa.1  ei.1     postg2.1 sllti2.1     zacai.1 \
++cher2k.1 dbskin.1 dpofs.1  eisdoc.1 ppadd.1  slpdoc.1     zacon.1 \
++cherk.1  dbsknu.1 dpolcf.1 elmbak.1 ppgq8.1  slvs.1       zairy.1 \
++chfcm.1  dbspdr.1 dpolft.1 elmhes.1 ppgsf.1  smout.1      zasyi.1 \
++chfdv.1  dbspev.1 dpolvl.1 eltran.1 pppsf.1  snbco.1      zbesh.1 \
++chfev.1  dbsppp.1 dpopt.1  enorm.1  ppqad.1  snbdi.1      zbesi.1 \
++chfie.1  dbspvd.1 dposl.1  erf.1    ppsgf.1  snbfa.1      zbesj.1 \
++chico.1  dbspvn.1 dppco.1  erfc.1   ppspf.1  snbfs.1      zbesk.1 \
++chidi.1  dbsqad.1 dppdi.1  ppval.1  snbir.1      zbesy.1 \
++chiev.1  dbsynu.1 dpperm.1 exint.1  proc.1   snbsl.1      zbinu.1 \
++chifa.1  dbvalu.1 dppfa.1  exprel.1 procp.1  snls1.1      zbiry.1 \
++chisl.1  dppgq8.1 ezfft1.1 prod.1   snls1e.1     zbknu.1 \
++chkder.1 dppqad.1 ezfftb.1 prodp.1  snrm2.1      zbuni.1 \
++chkpr4.1 dppsl.1  ezfftf.1 prvec.1  snsq.1       zbunk.1 \
++chkprm.1 dcbrt.1  dppval.1 ezffti.1 prwpge.1 snsqe.1      zdiv.1 \
++chksn4.1 dcdot.1  dprvec.1 fac.1    prwvir.1 sods.1       zexp.1 \
++chksng.1 dcfod.1  dprwpg.1 fc.1     psgf.1   somn.1       zkscl.1 \
++chpco.1  dcg.1    dprwvr.1 fcmn.1   psi.1    sopenm.1     zlog.1 \
++chpdi.1  dcgn.1   dpsi.1   fdjac1.1 psifn.1  sorth.1      zmlri.1 \
++chpfa.1  dcgs.1   dpsifn.1 fdjac3.1 psixn.1  sos.1        zmlt.1 \
++chpmv.1  dchdc.1  dpsixn.1 fdump.1  pvalue.1 soseqs.1     zrati.1 \
++chpr.1   dchdd.1  dpsort.1 fftdoc.1 pythag.1 sossol.1     zs1s2.1 \
++chpr2.1  dchex.1  dptsl.1  figi.1   qag.1    spbco.1      zseri.1 \
++chpsl.1  dchfcm.1 dqag.1   figi2.1  qage.1   spbdi.1      zshch.1 \
++chu.1    dchfdv.1 dqage.1  fulmat.1 qagi.1   spbfa.1      zsqrt.1 \
++cinvit.1 dchfev.1 dqagi.1  fundoc.1 qagie.1  spbsl.1      zuchk.1 \
++ckscl.1  dchfie.1 dqagie.1 fzero.1  qagp.1   speli4.1     zunhj.1 \
++clbeta.1 dchkw.1  dqagp.1  gami.1   qagpe.1  spelip.1     zuni1.1 \
++clngam.1 dchu.1   dqagpe.1 gamic.1  qags.1   spenc.1      zuni2.1 \
++clnrel.1 dchud.1  dqags.1  gamit.1  qagse.1  spigmr.1     zunik.1 \
++clog10.1 dckder.1 dqagse.1 gamlim.1 qawc.1   spincw.1     zunk1.1 \
++cmgnbn.1 dcoef.1  dqawc.1  gamln.1  qawce.1  spinit.1     zunk2.1 \
++cmlri.1  dcopy.1  dqawce.1 gamma.1  qawf.1   splp.1       zuoik.1 \
++cmpcsg.1 dcopym.1 dqawf.1  gamr.1   qawfe.1  splpce.1     zwrsk.1 \
++cmposd.1 dcosdg.1 dqawfe.1 gamrn.1  qawo.1   splpdm.1 \
++cmposn.1 dcot.1   dqawo.1  gaus8.1  qawoe.1  splpfe.1 \
++cmposp.1 dcov.1   dqawoe.1 genbun.1 qaws.1   splpfl.1 \
++cmptr3.1 dcpplt.1 dqaws.1  h12.1    qawse.1  splpmn.1 \
++cmptrx.1 dcscal.1 dqawse.1 hfti.1   qc25c.1  splpmu.1 \
++cnbco.1  dcsevl.1 dqc25c.1 hkseq.1  qc25f.1  splpup.1
++
++#
++#  Library targets and man pages.
++#
++
++OBJ = $(addprefix src/, $(MAN:.1=.o))
++$(info OBJ="$(OBJ)")
++
++#
++#  Library targets and man pages.
++#
++
++# all: libslatec.so #libslatec.a doc
++
++# libslatec.a:
++# 	cd static; make
++
++.PHONY: dynamic static
++
++all: libslatec.so libstatic_slatec.a
++
++dynamic: libslatec.so
++
++static: libstatic_slatec.a
++
++libslatec.so: $(OBJ)
++	${CC} -shared -o $@ $(OBJ) 
++
++libstatic_slatec.a:  $(OBJ)
++	${AR} r $@ $(OBJ); ranlib $@
++
++src/%.o: src/%.f
++	${FC} -c $< -o $@
++
++doc: $(MAN)
++
++${MAN}: %.1: %.f
++	sed -f makedoc.sed $< > $@
++
++install:
++	mkdir lib;
++	mv libslatec.a libslatec.so lib;
++
++clean:
++	rm -rf src/*.o src*.1 libslatec.a libslatec.so lib
+二元碼檔 clean/.makefile.swp 與 mod/.makefile.swp 不同
+diff -ruN clean/r1mach.f mod/r1mach.f
+--- clean/r1mach.f	1970-01-01 09:00:00.000000000 +0900
++++ mod/r1mach.f	1999-10-07 06:49:59.000000000 +0900
+@@ -0,0 +1,422 @@
++*DECK R1MACH
++      REAL FUNCTION R1MACH (I)
++C***BEGIN PROLOGUE  R1MACH
++C***PURPOSE  Return floating point machine dependent constants.
++C***LIBRARY   SLATEC
++C***CATEGORY  R1
++C***TYPE      SINGLE PRECISION (R1MACH-S, D1MACH-D)
++C***KEYWORDS  MACHINE CONSTANTS
++C***AUTHOR  Fox, P. A., (Bell Labs)
++C           Hall, A. D., (Bell Labs)
++C           Schryer, N. L., (Bell Labs)
++C***DESCRIPTION
++C
++C   R1MACH can be used to obtain machine-dependent parameters for the
++C   local machine environment.  It is a function subprogram with one
++C   (input) argument, and can be referenced as follows:
++C
++C        A = R1MACH(I)
++C
++C   where I=1,...,5.  The (output) value of A above is determined by
++C   the (input) value of I.  The results for various values of I are
++C   discussed below.
++C
++C   R1MACH(1) = B**(EMIN-1), the smallest positive magnitude.
++C   R1MACH(2) = B**EMAX*(1 - B**(-T)), the largest magnitude.
++C   R1MACH(3) = B**(-T), the smallest relative spacing.
++C   R1MACH(4) = B**(1-T), the largest relative spacing.
++C   R1MACH(5) = LOG10(B)
++C
++C   Assume single precision numbers are represented in the T-digit,
++C   base-B form
++C
++C              sign (B**E)*( (X(1)/B) + ... + (X(T)/B**T) )
++C
++C   where 0 .LE. X(I) .LT. B for I=1,...,T, 0 .LT. X(1), and
++C   EMIN .LE. E .LE. EMAX.
++C
++C   The values of B, T, EMIN and EMAX are provided in I1MACH as
++C   follows:
++C   I1MACH(10) = B, the base.
++C   I1MACH(11) = T, the number of base-B digits.
++C   I1MACH(12) = EMIN, the smallest exponent E.
++C   I1MACH(13) = EMAX, the largest exponent E.
++C
++C   To alter this function for a particular environment, the desired
++C   set of DATA statements should be activated by removing the C from
++C   column 1.  Also, the values of R1MACH(1) - R1MACH(4) should be
++C   checked for consistency with the local operating system.
++C
++C***REFERENCES  P. A. Fox, A. D. Hall and N. L. Schryer, Framework for
++C                 a portable library, ACM Transactions on Mathematical
++C                 Software 4, 2 (June 1978), pp. 177-188.
++C***ROUTINES CALLED  XERMSG
++C***REVISION HISTORY  (YYMMDD)
++C   790101  DATE WRITTEN
++C   890213  REVISION DATE from Version 3.2
++C   891214  Prologue converted to Version 4.0 format.  (BAB)
++C   900315  CALLs to XERROR changed to CALLs to XERMSG.  (THJ)
++C   900618  Added DEC RISC constants.  (WRB)
++C   900723  Added IBM RS 6000 constants.  (WRB)
++C   910710  Added HP 730 constants.  (SMR)
++C   911114  Added Convex IEEE constants.  (WRB)
++C   920121  Added SUN -r8 compiler option constants.  (WRB)
++C   920229  Added Touchstone Delta i860 constants.  (WRB)
++C   920501  Reformatted the REFERENCES section.  (WRB)
++C   920625  Added CONVEX -p8 and -pd8 compiler option constants.
++C           (BKS, WRB)
++C   930201  Added DEC Alpha and SGI constants.  (RWC and WRB)
++C***END PROLOGUE  R1MACH
++C
++C
++	external slamch
++      REAL RMACH(5),slamch
++	integer iflag
++
++      SAVE RMACH,iflag
++	data iflag/0/
++C
++C
++C     MACHINE CONSTANTS FOR THE AMIGA
++C     ABSOFT FORTRAN COMPILER USING THE 68020/68881 COMPILER OPTION
++C
++C     DATA SMALL(1) / Z'00800000' /
++C     DATA LARGE(1) / Z'7F7FFFFF' /
++C     DATA RIGHT(1) / Z'33800000' /
++C     DATA DIVER(1) / Z'34000000' /
++C     DATA LOG10(1) / Z'3E9A209B' /
++C
++C     MACHINE CONSTANTS FOR THE AMIGA
++C     ABSOFT FORTRAN COMPILER USING SOFTWARE FLOATING POINT
++C
++C     DATA SMALL(1) / Z'00800000' /
++C     DATA LARGE(1) / Z'7EFFFFFF' /
++C     DATA RIGHT(1) / Z'33800000' /
++C     DATA DIVER(1) / Z'34000000' /
++C     DATA LOG10(1) / Z'3E9A209B' /
++C
++C     MACHINE CONSTANTS FOR THE APOLLO
++C
++C     DATA SMALL(1) / 16#00800000 /
++C     DATA LARGE(1) / 16#7FFFFFFF /
++C     DATA RIGHT(1) / 16#33800000 /
++C     DATA DIVER(1) / 16#34000000 /
++C     DATA LOG10(1) / 16#3E9A209B /
++C
++C     MACHINE CONSTANTS FOR THE BURROUGHS 1700 SYSTEM
++C
++C     DATA RMACH(1) / Z400800000 /
++C     DATA RMACH(2) / Z5FFFFFFFF /
++C     DATA RMACH(3) / Z4E9800000 /
++C     DATA RMACH(4) / Z4EA800000 /
++C     DATA RMACH(5) / Z500E730E8 /
++C
++C     MACHINE CONSTANTS FOR THE BURROUGHS 5700/6700/7700 SYSTEMS
++C
++C     DATA RMACH(1) / O1771000000000000 /
++C     DATA RMACH(2) / O0777777777777777 /
++C     DATA RMACH(3) / O1311000000000000 /
++C     DATA RMACH(4) / O1301000000000000 /
++C     DATA RMACH(5) / O1157163034761675 /
++C
++C     MACHINE CONSTANTS FOR THE CDC 170/180 SERIES USING NOS/VE
++C
++C     DATA RMACH(1) / Z"3001800000000000" /
++C     DATA RMACH(2) / Z"4FFEFFFFFFFFFFFE" /
++C     DATA RMACH(3) / Z"3FD2800000000000" /
++C     DATA RMACH(4) / Z"3FD3800000000000" /
++C     DATA RMACH(5) / Z"3FFF9A209A84FBCF" /
++C
++C     MACHINE CONSTANTS FOR THE CDC 6000/7000 SERIES
++C
++C     DATA RMACH(1) / 00564000000000000000B /
++C     DATA RMACH(2) / 37767777777777777776B /
++C     DATA RMACH(3) / 16414000000000000000B /
++C     DATA RMACH(4) / 16424000000000000000B /
++C     DATA RMACH(5) / 17164642023241175720B /
++C
++C     MACHINE CONSTANTS FOR THE CELERITY C1260
++C
++C     DATA SMALL(1) / Z'00800000' /
++C     DATA LARGE(1) / Z'7F7FFFFF' /
++C     DATA RIGHT(1) / Z'33800000' /
++C     DATA DIVER(1) / Z'34000000' /
++C     DATA LOG10(1) / Z'3E9A209B' /
++C
++C     MACHINE CONSTANTS FOR THE CONVEX
++C     USING THE -fn COMPILER OPTION
++C
++C     DATA RMACH(1) / Z'00800000' /
++C     DATA RMACH(2) / Z'7FFFFFFF' /
++C     DATA RMACH(3) / Z'34800000' /
++C     DATA RMACH(4) / Z'35000000' /
++C     DATA RMACH(5) / Z'3F9A209B' /
++C
++C     MACHINE CONSTANTS FOR THE CONVEX
++C     USING THE -fi COMPILER OPTION
++C
++C     DATA RMACH(1) / Z'00800000' /
++C     DATA RMACH(2) / Z'7F7FFFFF' /
++C     DATA RMACH(3) / Z'33800000' /
++C     DATA RMACH(4) / Z'34000000' /
++C     DATA RMACH(5) / Z'3E9A209B' /
++C
++C     MACHINE CONSTANTS FOR THE CONVEX
++C     USING THE -p8 OR -pd8 COMPILER OPTION
++C
++C     DATA RMACH(1) / Z'0010000000000000' /
++C     DATA RMACH(2) / Z'7FFFFFFFFFFFFFFF' /
++C     DATA RMACH(3) / Z'3CC0000000000000' /
++C     DATA RMACH(4) / Z'3CD0000000000000' /
++C     DATA RMACH(5) / Z'3FF34413509F79FF' /
++C
++C     MACHINE CONSTANTS FOR THE CRAY
++C
++C     DATA RMACH(1) / 200034000000000000000B /
++C     DATA RMACH(2) / 577767777777777777776B /
++C     DATA RMACH(3) / 377224000000000000000B /
++C     DATA RMACH(4) / 377234000000000000000B /
++C     DATA RMACH(5) / 377774642023241175720B /
++C
++C     MACHINE CONSTANTS FOR THE DATA GENERAL ECLIPSE S/200
++C     NOTE - IT MAY BE APPROPRIATE TO INCLUDE THE FOLLOWING CARD -
++C     STATIC RMACH(5)
++C
++C     DATA SMALL /    20K,       0 /
++C     DATA LARGE / 77777K, 177777K /
++C     DATA RIGHT / 35420K,       0 /
++C     DATA DIVER / 36020K,       0 /
++C     DATA LOG10 / 40423K,  42023K /
++C
++C     MACHINE CONSTANTS FOR THE DEC ALPHA
++C     USING G_FLOAT
++C
++C     DATA RMACH(1) / '00000080'X /
++C     DATA RMACH(2) / 'FFFF7FFF'X /
++C     DATA RMACH(3) / '00003480'X /
++C     DATA RMACH(4) / '00003500'X /
++C     DATA RMACH(5) / '209B3F9A'X /
++C
++C     MACHINE CONSTANTS FOR THE DEC ALPHA
++C     USING IEEE_FLOAT
++C
++C     DATA RMACH(1) / '00800000'X /
++C     DATA RMACH(2) / '7F7FFFFF'X /
++C     DATA RMACH(3) / '33800000'X /
++C     DATA RMACH(4) / '34000000'X /
++C     DATA RMACH(5) / '3E9A209B'X /
++C
++C     MACHINE CONSTANTS FOR THE DEC RISC
++C
++C     DATA RMACH(1) / Z'00800000' /
++C     DATA RMACH(2) / Z'7F7FFFFF' /
++C     DATA RMACH(3) / Z'33800000' /
++C     DATA RMACH(4) / Z'34000000' /
++C     DATA RMACH(5) / Z'3E9A209B' /
++C
++C     MACHINE CONSTANTS FOR THE DEC VAX
++C     (EXPRESSED IN INTEGER AND HEXADECIMAL)
++C     THE HEX FORMAT BELOW MAY NOT BE SUITABLE FOR UNIX SYSTEMS
++C     THE INTEGER FORMAT SHOULD BE OK FOR UNIX SYSTEMS
++C
++C     DATA SMALL(1) /       128 /
++C     DATA LARGE(1) /    -32769 /
++C     DATA RIGHT(1) /     13440 /
++C     DATA DIVER(1) /     13568 /
++C     DATA LOG10(1) / 547045274 /
++C
++C     DATA SMALL(1) / Z00000080 /
++C     DATA LARGE(1) / ZFFFF7FFF /
++C     DATA RIGHT(1) / Z00003480 /
++C     DATA DIVER(1) / Z00003500 /
++C     DATA LOG10(1) / Z209B3F9A /
++C
++C     MACHINE CONSTANTS FOR THE ELXSI 6400
++C     (ASSUMING REAL*4 IS THE DEFAULT REAL)
++C
++C     DATA SMALL(1) / '00800000'X /
++C     DATA LARGE(1) / '7F7FFFFF'X /
++C     DATA RIGHT(1) / '33800000'X /
++C     DATA DIVER(1) / '34000000'X /
++C     DATA LOG10(1) / '3E9A209B'X /
++C
++C     MACHINE CONSTANTS FOR THE HARRIS 220
++C
++C     DATA SMALL(1), SMALL(2) / '20000000, '00000201 /
++C     DATA LARGE(1), LARGE(2) / '37777777, '00000177 /
++C     DATA RIGHT(1), RIGHT(2) / '20000000, '00000352 /
++C     DATA DIVER(1), DIVER(2) / '20000000, '00000353 /
++C     DATA LOG10(1), LOG10(2) / '23210115, '00000377 /
++C
++C     MACHINE CONSTANTS FOR THE HONEYWELL 600/6000 SERIES
++C
++C     DATA RMACH(1) / O402400000000 /
++C     DATA RMACH(2) / O376777777777 /
++C     DATA RMACH(3) / O714400000000 /
++C     DATA RMACH(4) / O716400000000 /
++C     DATA RMACH(5) / O776464202324 /
++C
++C     MACHINE CONSTANTS FOR THE HP 730
++C
++C     DATA RMACH(1) / Z'00800000' /
++C     DATA RMACH(2) / Z'7F7FFFFF' /
++C     DATA RMACH(3) / Z'33800000' /
++C     DATA RMACH(4) / Z'34000000' /
++C     DATA RMACH(5) / Z'3E9A209B' /
++C
++C     MACHINE CONSTANTS FOR THE HP 2100
++C     3 WORD DOUBLE PRECISION WITH FTN4
++C
++C     DATA SMALL(1), SMALL(2) / 40000B,       1 /
++C     DATA LARGE(1), LARGE(2) / 77777B, 177776B /
++C     DATA RIGHT(1), RIGHT(2) / 40000B,    325B /
++C     DATA DIVER(1), DIVER(2) / 40000B,    327B /
++C     DATA LOG10(1), LOG10(2) / 46420B,  46777B /
++C
++C     MACHINE CONSTANTS FOR THE HP 2100
++C     4 WORD DOUBLE PRECISION WITH FTN4
++C
++C     DATA SMALL(1), SMALL(2) / 40000B,       1 /
++C     DATA LARGE(1), LARGE(2) / 77777B, 177776B /
++C     DATA RIGHT(1), RIGHT(2) / 40000B,    325B /
++C     DATA DIVER(1), DIVER(2) / 40000B,    327B /
++C     DATA LOG10(1), LOG10(2) / 46420B,  46777B /
++C
++C     MACHINE CONSTANTS FOR THE HP 9000
++C
++C     DATA SMALL(1) / 00004000000B /
++C     DATA LARGE(1) / 17677777777B /
++C     DATA RIGHT(1) / 06340000000B /
++C     DATA DIVER(1) / 06400000000B /
++C     DATA LOG10(1) / 07646420233B /
++C
++C     MACHINE CONSTANTS FOR THE IBM 360/370 SERIES,
++C     THE XEROX SIGMA 5/7/9, THE SEL SYSTEMS 85/86  AND
++C     THE PERKIN ELMER (INTERDATA) 7/32.
++C
++C     DATA RMACH(1) / Z00100000 /
++C     DATA RMACH(2) / Z7FFFFFFF /
++C     DATA RMACH(3) / Z3B100000 /
++C     DATA RMACH(4) / Z3C100000 /
++C     DATA RMACH(5) / Z41134413 /
++C
++C     MACHINE CONSTANTS FOR THE IBM PC
++C
++C     DATA SMALL(1) / 1.18E-38      /
++C     DATA LARGE(1) / 3.40E+38      /
++C     DATA RIGHT(1) / 0.595E-07     /
++C     DATA DIVER(1) / 1.19E-07      /
++C     DATA LOG10(1) / 0.30102999566 /
++C
++C     MACHINE CONSTANTS FOR THE IBM RS 6000
++C
++C     DATA RMACH(1) / Z'00800000' /
++C     DATA RMACH(2) / Z'7F7FFFFF' /
++C     DATA RMACH(3) / Z'33800000' /
++C     DATA RMACH(4) / Z'34000000' /
++C     DATA RMACH(5) / Z'3E9A209B' /
++C
++C     MACHINE CONSTANTS FOR THE INTEL i860
++C
++C     DATA RMACH(1) / Z'00800000' /
++C     DATA RMACH(2) / Z'7F7FFFFF' /
++C     DATA RMACH(3) / Z'33800000' /
++C     DATA RMACH(4) / Z'34000000' /
++C     DATA RMACH(5) / Z'3E9A209B' /
++C
++C     MACHINE CONSTANTS FOR THE PDP-10 (KA OR KI PROCESSOR)
++C
++C     DATA RMACH(1) / "000400000000 /
++C     DATA RMACH(2) / "377777777777 /
++C     DATA RMACH(3) / "146400000000 /
++C     DATA RMACH(4) / "147400000000 /
++C     DATA RMACH(5) / "177464202324 /
++C
++C     MACHINE CONSTANTS FOR PDP-11 FORTRAN SUPPORTING
++C     32-BIT INTEGERS (EXPRESSED IN INTEGER AND OCTAL).
++C
++C     DATA SMALL(1) /    8388608 /
++C     DATA LARGE(1) / 2147483647 /
++C     DATA RIGHT(1) /  880803840 /
++C     DATA DIVER(1) /  889192448 /
++C     DATA LOG10(1) / 1067065499 /
++C
++C     DATA RMACH(1) / O00040000000 /
++C     DATA RMACH(2) / O17777777777 /
++C     DATA RMACH(3) / O06440000000 /
++C     DATA RMACH(4) / O06500000000 /
++C     DATA RMACH(5) / O07746420233 /
++C
++C     MACHINE CONSTANTS FOR PDP-11 FORTRAN SUPPORTING
++C     16-BIT INTEGERS  (EXPRESSED IN INTEGER AND OCTAL).
++C
++C     DATA SMALL(1), SMALL(2) /   128,     0 /
++C     DATA LARGE(1), LARGE(2) / 32767,    -1 /
++C     DATA RIGHT(1), RIGHT(2) / 13440,     0 /
++C     DATA DIVER(1), DIVER(2) / 13568,     0 /
++C     DATA LOG10(1), LOG10(2) / 16282,  8347 /
++C
++C     DATA SMALL(1), SMALL(2) / O000200, O000000 /
++C     DATA LARGE(1), LARGE(2) / O077777, O177777 /
++C     DATA RIGHT(1), RIGHT(2) / O032200, O000000 /
++C     DATA DIVER(1), DIVER(2) / O032400, O000000 /
++C     DATA LOG10(1), LOG10(2) / O037632, O020233 /
++C
++C     MACHINE CONSTANTS FOR THE SILICON GRAPHICS
++C
++C     DATA RMACH(1) / Z'00800000' /
++C     DATA RMACH(2) / Z'7F7FFFFF' /
++C     DATA RMACH(3) / Z'33800000' /
++C     DATA RMACH(4) / Z'34000000' /
++C     DATA RMACH(5) / Z'3E9A209B' /
++C
++C     MACHINE CONSTANTS FOR THE SUN
++C
++C     DATA RMACH(1) / Z'00800000' /
++C     DATA RMACH(2) / Z'7F7FFFFF' /
++C     DATA RMACH(3) / Z'33800000' /
++C     DATA RMACH(4) / Z'34000000' /
++C     DATA RMACH(5) / Z'3E9A209B' /
++C
++C     MACHINE CONSTANTS FOR THE SUN
++C     USING THE -r8 COMPILER OPTION
++C
++C     DATA RMACH(1) / Z'0010000000000000' /
++C     DATA RMACH(2) / Z'7FEFFFFFFFFFFFFF' /
++C     DATA RMACH(3) / Z'3CA0000000000000' /
++C     DATA RMACH(4) / Z'3CB0000000000000' /
++C     DATA RMACH(5) / Z'3FD34413509F79FF' /
++C
++C     MACHINE CONSTANTS FOR THE UNIVAC 1100 SERIES
++C
++C     DATA RMACH(1) / O000400000000 /
++C     DATA RMACH(2) / O377777777777 /
++C     DATA RMACH(3) / O146400000000 /
++C     DATA RMACH(4) / O147400000000 /
++C     DATA RMACH(5) / O177464202324 /
++C
++C     MACHINE CONSTANTS FOR THE Z80 MICROPROCESSOR
++C
++C     DATA SMALL(1), SMALL(2) /     0,    256/
++C     DATA LARGE(1), LARGE(2) /    -1,   -129/
++C     DATA RIGHT(1), RIGHT(2) /     0,  26880/
++C     DATA DIVER(1), DIVER(2) /     0,  27136/
++C     DATA LOG10(1), LOG10(2) /  8347,  32538/
++C
++C***FIRST EXECUTABLE STATEMENT  R1MACH
++      IF (I .LT. 1 .OR. I .GT. 5) CALL XERMSG ('SLATEC', 'R1MACH',
++     +   'I OUT OF BOUNDS', 1, 2)
++C
++	if (iflag.eq.0) then
++	   iflag=1
++	   rmach(1)=slamch('u')
++	   rmach(2)=slamch('o')
++	   rmach(3)=slamch('e')
++	   rmach(4)=slamch('p')
++	   rmach(5)=slamch('b')
++	   rmach(5)=log10(rmach(5))
++	endif
++      R1MACH = RMACH(I)
++      RETURN
++C
++      END
+diff -ruN clean/readme mod/readme
+--- clean/readme	1970-01-01 09:00:00.000000000 +0900
++++ mod/readme	2000-09-19 05:29:20.000000000 +0900
+@@ -0,0 +1,57 @@
++
++
++
++Synopsis.
++
++This package contains some files which allow the compilation of Slatec library
++on Linux. It has been tested on RH 6.x on x86. Probably it works on other
++systems. The software packages required to compile and use the library are:
++egcs
++egcs-g77
++lapack
++
++
++
++Installation.
++
++Download slatec_src.tgz from netlib (www.netlib.org) and open the archive on
++a directory of your choice. In the same directory open this archive, then type
++make; make install
++This will compile and install the library (both static and dynamic) in
++/usr/local/lib and the man pages in /usr/local/man/man1. Change the makefile
++to change the installation directories. The makedoc.sed script builds the
++man pages from the initial comment of the sources.
++Note that you must be root to use the above directories and that /usr/local/lib
++must be listed in /etc/ld.so.conf .
++A program linked with slatec needs also to be linked with lapack, because the
++routines [sd]lamch are used in [dr]1mach.
++
++
++
++Author.
++
++Giuseppe Borzi'
++e-mail: etana@tiscalinet.it
++http://web.tiscalinet.it/gborzi
++fax: +39 1782235968
++Assistant Professor at the Univ. of Messina - Italia
++
++
++
++License.
++
++General Public License. Slatec is 'Freely distributable' as they say.
++
++
++
++Filelist.
++
++d1mach.f ( modified by including calls to dlamch )
++dynamic/makefile ( makefile for dynamic library )
++i1mach.f ( with lines for IBM PC uncommented )
++makedoc.sed ( builds man pages )
++makefile
++r1mach.f ( modified by including calls to slamch )
++readme ( this file )
++static/makefile ( makefile for static library )
++
+二元碼檔 clean/slatec4linux.tgz 與 mod/slatec4linux.tgz 不同
