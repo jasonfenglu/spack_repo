@@ -56,9 +56,5 @@ class PyBpython(PythonPackage):
     depends_on('py-requests')
     depends_on('py-curtsies@0.1.18:0.199999')
     depends_on('py-greenlet')
+    depends_on('py-setuptools')
 
-    def build_args(self, spec, prefix):
-        # FIXME: Add arguments other than --prefix
-        # FIXME: If not needed delete this function
-        args = []
-        return args

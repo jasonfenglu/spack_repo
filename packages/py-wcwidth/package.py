@@ -27,11 +27,11 @@
 # next to all the things you'll want to change. Once you've handled
 # them, you can save this file and test your package like this:
 #
-#     spack install py-curtsies
+#     spack install py-wcwidth
 #
 # You can edit this file again by typing:
 #
-#     spack edit py-curtsies
+#     spack edit py-wcwidth
 #
 # See the Spack documentation for more information on packaging.
 # If you submit this package back to Spack as a pull request,
@@ -40,15 +40,13 @@
 from spack import *
 
 
-class PyCurtsies(PythonPackage):
-    """Curtsies is a library for interacting with the terminal. """
+class PyWcwidth(PythonPackage):
+    """Python library that measures the width of unicode strings rendered to a terminal."""
 
-    homepage = "https://pypi.python.org/pypi/curtsies"
-    url      = "https://pypi.python.org/packages/e7/4f/fb0cdd66abfbffd2788384accbf7896d717f70b62edf7556e2468ab87d07/curtsies-0.2.11.tar.gz"
+    # FIXME: Add a proper url for your package's homepage here.
+    homepage = "http://www.example.com://pypi.python.org/pypi/wcwidth" 
+    url      = "https://github.com/jquast/wcwidth/archive/0.1.7.tar.gz"
 
-    version('0.2.11', 'fe1944b9dd078c7d5d8a93c10ad7413d')
+    version('0.1.7', '77e4c7d31435a57792b4e42961e8aad6')
 
     depends_on('py-setuptools', type='build')
-    depends_on('py-blessings@1.5:')
-    depends_on('py-wcwidth@0.1.4:')
-
