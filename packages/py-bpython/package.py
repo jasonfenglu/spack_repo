@@ -41,7 +41,10 @@ from spack import *
 
 
 class PyBpython(PythonPackage):
-    """A fancy curses interface to the Python interactive interpreter https://bpython-interpreter.org/ """
+    """
+    A fancy curses interface to the Python interactive interpreter. 
+    https://bpython-interpreter.org/ 
+    """
 
     # FIXME: Add a proper url for your package's homepage here.
     homepage = "https://github.com/bpython/bpython"
