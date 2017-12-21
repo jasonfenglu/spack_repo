@@ -41,15 +41,18 @@ from spack import *
 
 
 class PyItermplot(PythonPackage):
-    """FIXME: Put a proper description of your package here."""
+    """
+    An awesome iTerm2 backend for Matplotlib, so you can plot directly in your terminal.
+    """
 
-    # FIXME: Add a proper url for your package's homepage here.
     homepage = "https://github.com/daleroberts/itermplot"
     url      = "https://github.com/daleroberts/itermplot.git"
 
     version('develop', git='https://github.com/daleroberts/itermplot.git')
 
-    # FIXME: Add dependencies if required.
-    # depends_on('py-setuptools', type='build')
-    # depends_on('py-foo',        type=('build', 'run'))
+    depends_on('py-setuptools', type='build')
+    depends_on('py-matplotlib', type='run')
 
+    def setup_environment(self, spack_env, run_env):
+        run_env.set('MPLBACKEND','module://itermplot')
+        run_env.set('ITERMPLOT','rv')
