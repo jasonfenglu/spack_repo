@@ -60,4 +60,5 @@ class PyBpython(PythonPackage):
     depends_on('py-curtsies@0.1.18:0.199999')
     depends_on('py-greenlet')
     depends_on('py-setuptools')
+    depends_on('py-six')
 
