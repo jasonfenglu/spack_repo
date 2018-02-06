@@ -52,6 +52,5 @@ class TmuxCssh(Package):
     depends_on('tmux', type='run')
 
     def install(self, spec, prefix):
-        cp = which('cp')
         mkdirp(prefix.bin)
-        cp('tmux-cssh', prefix.bin)
+        install('tmux-cssh', prefix.bin)
